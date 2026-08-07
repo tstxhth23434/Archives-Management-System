@@ -1,0 +1,295 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 1120" width="1500" height="1120">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#858585"/>
+    </marker>
+    <marker id="crow" markerWidth="12" markerHeight="12" refX="0" refY="6" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,12 M0,6 L9,0 M0,6 L9,12" fill="none" stroke="#858585" stroke-width="1.5"/>
+    </marker>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="1500" height="1120" fill="#1e1e1e"/>
+
+  <!-- 标题 -->
+  <text x="750" y="40" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="22" font-weight="bold" fill="#e0e0e0">DocumentManagementSystemApplication · E-R 图</text>
+
+  <!-- 图例 -->
+  <rect x="40" y="1040" width="280" height="55" rx="6" fill="#252526" stroke="#3c3c3c"/>
+  <text x="55" y="1065" font-family="Microsoft YaHei, sans-serif" font-size="13" fill="#cccccc" font-weight="bold">图例</text>
+  <rect x="95" y="1052" width="16" height="16" fill="#3a5a8a"/>
+  <text x="118" y="1065" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#cccccc">系统管理</text>
+  <rect x="190" y="1052" width="16" height="16" fill="#3a7a5a"/>
+  <text x="213" y="1065" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#cccccc">档案核心</text>
+  <rect x="95" y="1074" width="16" height="16" fill="#8a6a3a"/>
+  <text x="118" y="1087" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#cccccc">业务流转</text>
+  <rect x="190" y="1074" width="16" height="16" fill="#6a4a8a"/>
+  <text x="213" y="1087" font-family="Microsoft YaHei, sans-serif" font-size="12" fill="#cccccc">库房管理(可选)</text>
+
+  <!-- ===== 系统管理域 ===== -->
+  <text x="245" y="75" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="15" font-weight="bold" fill="#7aabd6">系统管理域</text>
+
+  <!-- sys_user -->
+  <g transform="translate(50,90)">
+    <rect width="230" height="130" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#3a5a8a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">sys_user (用户)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   username</text>
+    <text x="10" y="88" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   password</text>
+    <text x="10" y="108" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK role_id</text>
+    <text x="10" y="125" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK fonds_id</text>
+  </g>
+
+  <!-- sys_role -->
+  <g transform="translate(50,300)">
+    <rect width="230" height="100" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#3a5a8a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">sys_role (角色)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   role_name</text>
+    <text x="10" y="88" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   role_code</text>
+  </g>
+
+  <!-- sys_menu -->
+  <g transform="translate(300,90)">
+    <rect width="230" height="120" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#3a5a8a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">sys_menu (菜单/权限)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   parent_id</text>
+    <text x="10" y="88" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   menu_name</text>
+    <text x="10" y="108" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   perms</text>
+  </g>
+
+  <!-- sys_role_menu -->
+  <g transform="translate(300,300)">
+    <rect width="230" height="90" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#3a5a8a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">sys_role_menu (角色菜单)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK role_id / FK menu_id</text>
+  </g>
+
+  <!-- sys_dict -->
+  <g transform="translate(50,480)">
+    <rect width="230" height="90" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#3a5a8a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">sys_dict (字典类型)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   dict_code / dict_name</text>
+  </g>
+
+  <!-- sys_dict_item -->
+  <g transform="translate(300,480)">
+    <rect width="230" height="90" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#3a5a8a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">sys_dict_item (字典项)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK dict_id</text>
+  </g>
+
+  <!-- sys_log -->
+  <g transform="translate(50,640)">
+    <rect width="230" height="90" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#3a5a8a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">sys_log (操作日志)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   user_id / operation</text>
+  </g>
+
+  <!-- ===== 档案核心域 ===== -->
+  <text x="775" y="75" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="15" font-weight="bold" fill="#7bd6a3">档案核心域</text>
+
+  <!-- da_fonds -->
+  <g transform="translate(560,90)">
+    <rect width="230" height="90" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#3a7a5a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">da_fonds (全宗)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   fonds_code / fonds_name</text>
+  </g>
+
+  <!-- da_archive_type -->
+  <g transform="translate(830,90)">
+    <rect width="230" height="100" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#3a7a5a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">da_archive_type (门类)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK fonds_id</text>
+    <text x="10" y="88" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   type_code / type_name</text>
+  </g>
+
+  <!-- da_volume -->
+  <g transform="translate(560,280)">
+    <rect width="230" height="120" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#3a7a5a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">da_volume (案卷)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK fonds_id</text>
+    <text x="10" y="88" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK type_id</text>
+    <text x="10" y="108" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   volume_no / title</text>
+  </g>
+
+  <!-- da_file -->
+  <g transform="translate(830,280)">
+    <rect width="230" height="160" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#3a7a5a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">da_file (文件/档案)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK volume_id</text>
+    <text x="10" y="88" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK fonds_id / FK type_id</text>
+    <text x="10" y="108" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   archive_no / title</text>
+    <text x="10" y="128" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   status / keywords</text>
+    <text x="10" y="148" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK warehouse/shelf/cell</text>
+  </g>
+
+  <!-- da_electronic_file -->
+  <g transform="translate(560,520)">
+    <rect width="230" height="100" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#3a7a5a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">da_electronic_file (电子原文)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK archive_id</text>
+    <text x="10" y="88" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   file_name / file_path</text>
+  </g>
+
+  <!-- da_lifecycle -->
+  <g transform="translate(830,520)">
+    <rect width="230" height="100" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#3a7a5a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">da_lifecycle (生命周期)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK archive_id</text>
+    <text x="10" y="88" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   action / operator_name</text>
+  </g>
+
+  <!-- ===== 业务流转域 ===== -->
+  <text x="775" y="675" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="15" font-weight="bold" fill="#d6b07a">业务流转域</text>
+
+  <!-- da_borrow -->
+  <g transform="translate(560,700)">
+    <rect width="230" height="120" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#8a6a3a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">da_borrow (借阅单)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK archive_id</text>
+    <text x="10" y="88" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   borrow_no / reason</text>
+    <text x="10" y="108" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   status / return_time</text>
+  </g>
+
+  <!-- da_appraisal -->
+  <g transform="translate(830,700)">
+    <rect width="230" height="100" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#8a6a3a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">da_appraisal (鉴定记录)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK archive_id</text>
+    <text x="10" y="88" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   result / reason</text>
+  </g>
+
+  <!-- da_destruction -->
+  <g transform="translate(830,860)">
+    <rect width="230" height="120" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#8a6a3a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">da_destruction (销毁记录)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK archive_id</text>
+    <text x="10" y="88" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   destruction_no</text>
+    <text x="10" y="108" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   destruction_time</text>
+  </g>
+
+  <!-- ===== 库房管理域(可选) ===== -->
+  <text x="1190" y="75" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="15" font-weight="bold" fill="#b89cd6">库房管理域(可选)</text>
+
+  <!-- da_warehouse -->
+  <g transform="translate(1080,90)">
+    <rect width="230" height="90" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#6a4a8a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">da_warehouse (库房)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   warehouse_code / name</text>
+  </g>
+
+  <!-- da_shelf -->
+  <g transform="translate(1080,250)">
+    <rect width="230" height="100" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#6a4a8a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">da_shelf (密集架)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK warehouse_id</text>
+    <text x="10" y="88" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   shelf_code / name</text>
+  </g>
+
+  <!-- da_cell -->
+  <g transform="translate(1080,420)">
+    <rect width="230" height="100" rx="5" fill="#252526" stroke="#3c3c3c"/>
+    <rect width="230" height="28" rx="5" fill="#6a4a8a"/>
+    <text x="115" y="19" text-anchor="middle" font-family="Microsoft YaHei, sans-serif" font-size="13" font-weight="bold" fill="#ffffff">da_cell (单元格)</text>
+    <text x="10" y="48" font-family="Consolas, monospace" font-size="12" fill="#9cdcfe">PK</text><text x="30" y="48" font-family="Consolas, monospace" font-size="12" fill="#dcdcaa">id</text>
+    <text x="10" y="68" font-family="Consolas, monospace" font-size="12" fill="#cccccc">FK shelf_id</text>
+    <text x="10" y="88" font-family="Consolas, monospace" font-size="12" fill="#cccccc">   cell_code / name</text>
+  </g>
+
+  <!-- ===== 关系连线 ===== -->
+  <g stroke="#858585" stroke-width="1.5" fill="none">
+    <!-- sys_role -> sys_user -->
+    <line x1="280" y1="350" x2="165" y2="220" marker-end="url(#arrow)"/>
+    <!-- sys_menu -> sys_role_menu -->
+    <line x1="415" y1="210" x2="415" y2="300" marker-end="url(#arrow)"/>
+    <!-- sys_role -> sys_role_menu -->
+    <line x1="280" y1="350" x2="300" y2="345" marker-end="url(#arrow)"/>
+    <!-- sys_dict -> sys_dict_item -->
+    <line x1="280" y1="525" x2="300" y2="525" marker-end="url(#arrow)"/>
+    <!-- da_fonds -> da_archive_type -->
+    <line x1="790" y1="135" x2="830" y2="135" marker-end="url(#arrow)"/>
+    <!-- da_fonds -> da_volume -->
+    <line x1="675" y1="180" x2="675" y2="280" marker-end="url(#arrow)"/>
+    <!-- da_archive_type -> da_volume -->
+    <line x1="945" y1="180" x2="790" y2="310" marker-end="url(#arrow)"/>
+    <!-- da_archive_type -> da_file -->
+    <line x1="945" y1="160" x2="945" y2="280" marker-end="url(#arrow)"/>
+    <!-- da_fonds -> da_file -->
+    <line x1="790" y1="160" x2="875" y2="280" marker-end="url(#arrow)"/>
+    <!-- da_volume -> da_file -->
+    <line x1="790" y1="340" x2="830" y2="340" marker-end="url(#arrow)"/>
+    <!-- da_file -> da_electronic_file -->
+    <line x1="830" y1="440" x2="790" y2="520" marker-end="url(#arrow)"/>
+    <!-- da_file -> da_lifecycle -->
+    <line x1="945" y1="440" x2="945" y2="520" marker-end="url(#arrow)"/>
+    <!-- da_file -> da_borrow -->
+    <line x1="830" y1="440" x2="790" y2="700" marker-end="url(#arrow)"/>
+    <!-- da_file -> da_appraisal -->
+    <line x1="945" y1="440" x2="945" y2="700" marker-end="url(#arrow)"/>
+    <!-- da_file -> da_destruction -->
+    <line x1="1000" y1="440" x2="1005" y2="860" marker-end="url(#arrow)"/>
+    <!-- da_warehouse -> da_shelf -->
+    <line x1="1195" y1="180" x2="1195" y2="250" marker-end="url(#arrow)"/>
+    <!-- da_shelf -> da_cell -->
+    <line x1="1195" y1="350" x2="1195" y2="420" marker-end="url(#arrow)"/>
+    <!-- da_warehouse -> da_file -->
+    <line x1="1080" y1="135" x2="1060" y2="360" marker-end="url(#arrow)"/>
+    <!-- da_shelf -> da_file -->
+    <line x1="1080" y1="300" x2="1060" y2="380" marker-end="url(#arrow)"/>
+    <!-- da_cell -> da_file -->
+    <line x1="1080" y1="470" x2="1060" y2="420" marker-end="url(#arrow)"/>
+    <!-- da_fonds -> sys_user -->
+    <line x1="560" y1="120" x2="280" y2="170" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- 关系说明文字 -->
+  <g font-family="Microsoft YaHei, sans-serif" font-size="11" fill="#999999">
+    <text x="285" y="270">1:N</text>
+    <text x="330" y="255">N:M</text>
+    <text x="325" y="510">1:N</text>
+    <text x="800" y="125">1:N</text>
+    <text x="690" y="240">1:N</text>
+    <text x="840" y="325">1:N</text>
+    <text x="840" y="490">1:N</text>
+    <text x="840" y="620">1:N</text>
+    <text x="960" y="620">1:N</text>
+    <text x="1205" y="220">1:N</text>
+    <text x="1205" y="390">1:N</text>
+    <text x="490" y="150">1:N</text>
+  </g>
+</svg>
