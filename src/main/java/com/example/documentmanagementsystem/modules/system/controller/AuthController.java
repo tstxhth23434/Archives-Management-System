@@ -4,6 +4,8 @@ import com.example.documentmanagementsystem.common.base.BaseController;
 import com.example.documentmanagementsystem.common.result.Result;
 import com.example.documentmanagementsystem.modules.system.dto.ChangePasswordDTO;
 import com.example.documentmanagementsystem.modules.system.dto.LoginDTO;
+import com.example.documentmanagementsystem.modules.system.entity.SysMenu;
+import com.example.documentmanagementsystem.modules.system.service.ISysMenuService;
 import com.example.documentmanagementsystem.modules.system.service.ISysUserService;
 import com.example.documentmanagementsystem.modules.system.vo.LoginVO;
 import com.example.documentmanagementsystem.modules.system.vo.UserInfoVO;
@@ -19,6 +21,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
+import java.util.Map;
 
 /**
  * 登录认证接口
@@ -32,6 +36,9 @@ public class AuthController extends BaseController {
 
     @Resource
     private ISysUserService sysUserService;
+
+    @Resource
+    private ISysMenuService sysMenuService;
 
     /**
      * 用户登录
@@ -71,6 +78,22 @@ public class AuthController extends BaseController {
     public Result<Void> changePassword(@Validated @RequestBody ChangePasswordDTO dto) {
         sysUserService.changePassword(dto);
         return success("修改成功，请重新登录", null);
+    }
+
+    /**
+     * 获取当前登录用户的菜单树 + 权限码
+     * 前端根据菜单树动态渲染侧边栏，根据权限码控制按钮显隐
+     */
+    @ApiOperation("获取当前用户菜单树和权限码")
+    @GetMapping("/menus")
+    public Result<Map<String, Object>> menus() {
+        Long userId = cn.dev33.satoken.stp.StpUtil.getLoginIdAsLong();
+        List<SysMenu> menuTree = sysMenuService.listUserMenuTree(userId);
+        List<String> perms = sysMenuService.listUserPerms(userId);
+        Map<String, Object> data = new java.util.HashMap<>(4);
+        data.put("menus", menuTree);
+        data.put("perms", perms);
+        return success(data);
     }
 
     /**

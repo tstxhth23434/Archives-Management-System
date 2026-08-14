@@ -24,6 +24,26 @@ spring:
       # 连接测试语句
       connection-test-query: SELECT 1
 
+  # Redis 缓存（字典缓存方案A）
+  redis:
+    host: localhost
+    port: 6379
+    # 本机 Redis 密码（换电脑需同步本机 Redis 的 requirepass 配置）
+    password: tlkj@admin123!
+    database: 0
+    # 连接超时（毫秒）
+    timeout: 5000
+    lettuce:
+      pool:
+        # 最大连接数
+        max-active: 8
+        # 最大空闲连接数
+        max-idle: 8
+        # 最小空闲连接数
+        min-idle: 0
+        # 获取连接最大等待时间
+        max-wait: -1ms
+
 # Knife4j 接口文档（开发环境启用）
 knife4j:
   enable: true

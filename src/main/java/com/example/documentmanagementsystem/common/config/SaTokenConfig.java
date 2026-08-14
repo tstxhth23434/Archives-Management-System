@@ -18,12 +18,13 @@ public class SaTokenConfig implements WebMvcConfigurer {
 
     /**
      * 注册 Sa-Token 拦截器
-     * 校验所有接口是否已登录（白名单除外）
+     * 1. 校验所有接口是否已登录（白名单除外）
+     * 2. 开启注解鉴权，支持 @SaCheckLogin / @SaCheckPermission 等注解（D5）
      */
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // 登录校验拦截器
-        registry.addInterceptor(new SaInterceptor(handle -> StpUtil.checkLogin()))
+        // 登录校验拦截器 + 注解鉴权
+        registry.addInterceptor(new SaInterceptor(handle -> StpUtil.checkLogin()).isAnnotation(true))
                 // 拦截所有请求
                 .addPathPatterns("/**")
                 // 白名单：Swagger/Knife4j 文档、登录相关接口、静态资源

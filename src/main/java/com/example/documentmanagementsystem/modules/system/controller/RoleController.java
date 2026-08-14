@@ -1,11 +1,13 @@
 package com.example.documentmanagementsystem.modules.system.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.example.documentmanagementsystem.common.annotation.OpLog;
 import com.example.documentmanagementsystem.common.base.BaseController;
 import com.example.documentmanagementsystem.common.result.Result;
 import com.example.documentmanagementsystem.modules.system.dto.RoleDTO;
 import com.example.documentmanagementsystem.modules.system.dto.RoleQuery;
 import com.example.documentmanagementsystem.modules.system.entity.SysRole;
+import com.example.documentmanagementsystem.modules.system.service.ISysMenuService;
 import com.example.documentmanagementsystem.modules.system.service.ISysRoleService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -25,6 +27,7 @@ import java.util.List;
 /**
  * 角色管理接口
  * 路径 /api/system/** 需登录访问（Sa-Token 拦截）
+ * 增删改通过 @OpLog 记录操作日志（D6）
  */
 @Api(tags = "02-角色管理")
 @RestController
@@ -33,6 +36,9 @@ public class RoleController extends BaseController {
 
     @Resource
     private ISysRoleService roleService;
+
+    @Resource
+    private ISysMenuService menuService;
 
     @ApiOperation("分页查询角色")
     @GetMapping("/page")
@@ -47,6 +53,7 @@ public class RoleController extends BaseController {
     }
 
     @ApiOperation("新增角色")
+    @OpLog("新增角色")
     @PostMapping
     public Result<Void> add(@Validated @RequestBody RoleDTO dto) {
         roleService.createRole(dto);
@@ -54,6 +61,7 @@ public class RoleController extends BaseController {
     }
 
     @ApiOperation("编辑角色")
+    @OpLog("编辑角色")
     @PutMapping
     public Result<Void> edit(@Validated @RequestBody RoleDTO dto) {
         roleService.updateRole(dto);
@@ -61,9 +69,24 @@ public class RoleController extends BaseController {
     }
 
     @ApiOperation("删除角色")
+    @OpLog("删除角色")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         roleService.deleteRole(id);
         return success("删除成功", null);
+    }
+
+    @ApiOperation("查询角色已分配的菜单ID列表")
+    @GetMapping("/{id}/menus")
+    public Result<List<Long>> listMenus(@PathVariable Long id) {
+        return success(menuService.listMenuIdsByRole(id));
+    }
+
+    @ApiOperation("给角色分配菜单")
+    @OpLog("角色分配菜单")
+    @PostMapping("/{id}/menus")
+    public Result<Void> assignMenus(@PathVariable Long id, @RequestBody List<Long> menuIds) {
+        menuService.assignMenusToRole(id, menuIds);
+        return success("分配成功", null);
     }
 }

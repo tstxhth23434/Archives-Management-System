@@ -70,6 +70,8 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
         // 4. Sa-Token 登录，签发 token
         StpUtil.login(user.getId());
+        // 将用户名存入会话，供操作日志切面（OpLogAspect）读取
+        StpUtil.getSession().set("username", user.getUsername());
 
         // 5. 更新最后登录信息
         SysUser updateUser = new SysUser();

@@ -1,6 +1,8 @@
 package com.example.documentmanagementsystem.common.exception;
 
 import cn.dev33.satoken.exception.NotLoginException;
+import cn.dev33.satoken.exception.NotPermissionException;
+import cn.dev33.satoken.exception.NotRoleException;
 import com.example.documentmanagementsystem.common.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.validation.BindException;
@@ -29,6 +31,25 @@ public class GlobalExceptionHandler {
     public Result<Void> handleNotLoginException(NotLoginException e, HttpServletRequest request) {
         log.warn("未登录访问被拦截: {}, 请求路径: {}", e.getMessage(), request.getRequestURI());
         return Result.error(401, "未登录或登录已过期，请重新登录");
+    }
+
+    /**
+     * 无权限异常：@SaCheckPermission 注解校验失败（D5）
+     * 前端根据 code=403 提示无权限
+     */
+    @ExceptionHandler(NotPermissionException.class)
+    public Result<Void> handleNotPermissionException(NotPermissionException e, HttpServletRequest request) {
+        log.warn("无权限访问被拦截: {}, 请求路径: {}", e.getMessage(), request.getRequestURI());
+        return Result.error(403, "无权限执行此操作");
+    }
+
+    /**
+     * 无角色异常：@SaCheckRole 注解校验失败
+     */
+    @ExceptionHandler(NotRoleException.class)
+    public Result<Void> handleNotRoleException(NotRoleException e, HttpServletRequest request) {
+        log.warn("无角色访问被拦截: {}, 请求路径: {}", e.getMessage(), request.getRequestURI());
+        return Result.error(403, "无权限执行此操作");
     }
 
     /**

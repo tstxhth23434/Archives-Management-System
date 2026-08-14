@@ -1,6 +1,8 @@
 package com.example.documentmanagementsystem.modules.system.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.example.documentmanagementsystem.common.annotation.OpLog;
 import com.example.documentmanagementsystem.common.base.BaseController;
 import com.example.documentmanagementsystem.common.result.Result;
 import com.example.documentmanagementsystem.modules.system.dto.UserDTO;
@@ -24,6 +26,8 @@ import javax.annotation.Resource;
 /**
  * 用户管理接口
  * 路径 /api/system/** 需登录访问（Sa-Token 拦截）
+ * 敏感操作通过 @SaCheckPermission 做按钮级权限控制（D5）
+ * 增删改通过 @OpLog 记录操作日志（D6）
  */
 @Api(tags = "03-用户管理")
 @RestController
@@ -40,6 +44,7 @@ public class UserController extends BaseController {
     }
 
     @ApiOperation("新增用户")
+    @OpLog("新增用户")
     @PostMapping
     public Result<Void> add(@Validated @RequestBody UserDTO dto) {
         sysUserService.createUser(dto);
@@ -47,6 +52,7 @@ public class UserController extends BaseController {
     }
 
     @ApiOperation("编辑用户")
+    @OpLog("编辑用户")
     @PutMapping
     public Result<Void> edit(@Validated @RequestBody UserDTO dto) {
         sysUserService.updateUser(dto);
@@ -54,6 +60,8 @@ public class UserController extends BaseController {
     }
 
     @ApiOperation("删除用户")
+    @SaCheckPermission("system:user:delete")
+    @OpLog("删除用户")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
         sysUserService.deleteUser(id);
@@ -61,6 +69,8 @@ public class UserController extends BaseController {
     }
 
     @ApiOperation("启用/禁用用户")
+    @SaCheckPermission("system:user:status")
+    @OpLog("启禁用用户")
     @PutMapping("/{id}/status/{status}")
     public Result<Void> changeStatus(@PathVariable Long id, @PathVariable Integer status) {
         sysUserService.changeUserStatus(id, status);
@@ -68,6 +78,8 @@ public class UserController extends BaseController {
     }
 
     @ApiOperation("重置用户密码为默认密码")
+    @SaCheckPermission("system:user:reset-password")
+    @OpLog("重置用户密码")
     @PutMapping("/{id}/reset-password")
     public Result<Void> resetPassword(@PathVariable Long id) {
         sysUserService.resetPassword(id);
