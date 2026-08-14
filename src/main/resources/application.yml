@@ -1,0 +1,87 @@
+spring:
+  profiles:
+    active: dev
+
+  # 统一返回格式：Jackson 配置
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+    serialization:
+      write-dates-as-timestamps: false
+
+  # 文件上传
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+  # 静态资源路径（前后端分离模式，生产环境可关闭）
+  web:
+    resources:
+      static-locations: classpath:/static/,classpath:/templates/
+
+  # Springfox(Swagger) 兼容配置：Spring Boot 2.6+ 默认使用 PathPatternParser，Springfox 3.0 不支持
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+  # 强制启用控制台 ANSI 颜色（解决 Git Bash / cmd 下 banner 不显示颜色的问题）
+  output:
+    ansi:
+      enabled: ALWAYS
+
+# 日志配置
+logging:
+  level:
+    root: info
+    com.example.documentmanagementsystem: debug
+    com.baomidou.mybatisplus: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  # XML 映射文件位置
+  mapper-locations: classpath:/mapper/**/*.xml
+  # 实体类包路径（配置后 XML 里可以写简单类名）
+  type-aliases-package: com.example.documentmanagementsystem.modules.**.entity
+  # 全局配置
+  global-config:
+    db-config:
+      # 逻辑删除字段名
+      logic-delete-field: delFlag
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      # ID 生成策略：数据库自增（BigInt auto_increment）
+      id-type: auto
+  # 控制台打印 SQL（开发环境调试用）
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    # 下划线转驼峰（默认 true，显式写出来）
+    map-underscore-to-camel-case: true
+
+# Sa-Token 配置（D3 登录模块再完善）
+sa-token:
+  # Token 名称
+  token-name: Authorization
+  # Token 有效期（秒）默认30天
+  timeout: 2592000
+  # Token 临时有效期（秒）-1 代表永不过期
+  active-timeout: -1
+  # 是否允许同一账号并发登录（为 true 时允许一起登录，为 false 时新登录挤掉旧登录）
+  is-concurrent: true
+  # 在多人登录同一账号时，是否共用一个 token（为 true 时所有登录共用一个 token，为 false 时每次登录新建一个 token）
+  is-share: false
+  # Token 风格
+  token-style: uuid
+  # 是否输出操作日志
+  is-log: false
+
+# 档案系统自定义配置
+dms:
+  # 文件上传存储路径（Windows 下用双反斜杠或正斜杠）
+  upload-path: ${user.home}/dms-uploads/
+  # 允许上传的文件类型
+  allowed-extensions: pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,rar,jpg,jpeg,png,gif,bmp,mp4,avi,mp3,wav
+  # 档号前缀分隔符
+  archive-no-separator: "-"

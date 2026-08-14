@@ -1,6 +1,6 @@
 -- ============================================================
--- 数据库名称: DocumentManagementSystemApplication
--- 项目名称: 档案管理系统（低配版 / 毕业设计版）
+-- 数据库名称: document_management_system
+-- 项目名称: 档案管理系统（低配版 )
 -- 技术栈: Spring Boot + MyBatis-Plus + Sa-Token + MySQL 8.0
 -- 设计原则:
 --   1. 保留档案行业业务骨架: 全宗 -> 门类 -> 案卷 -> 文件
@@ -9,11 +9,11 @@
 --   4. 所有表统一公共字段: create_by, create_time, update_by, update_time, del_flag
 -- ============================================================
 
-CREATE DATABASE IF NOT EXISTS `DocumentManagementSystemApplication`
+CREATE DATABASE IF NOT EXISTS `document_management_system`
     DEFAULT CHARACTER SET utf8mb4
     DEFAULT COLLATE utf8mb4_unicode_ci;
 
-USE `DocumentManagementSystemApplication`;
+USE `document_management_system`;
 
 -- ============================================================
 -- 一、系统管理域
