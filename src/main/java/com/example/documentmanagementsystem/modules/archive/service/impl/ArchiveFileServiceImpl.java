@@ -5,16 +5,15 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.documentmanagementsystem.common.exception.ServiceException;
-import com.example.documentmanagementsystem.modules.archive.dto.ArchiveVolumeDTO;
-import com.example.documentmanagementsystem.modules.archive.dto.ArchiveVolumeQuery;
+import com.example.documentmanagementsystem.modules.archive.dto.ArchiveFileDTO;
+import com.example.documentmanagementsystem.modules.archive.dto.ArchiveFileQuery;
 import com.example.documentmanagementsystem.modules.archive.entity.ArchiveFonds;
+import com.example.documentmanagementsystem.modules.archive.entity.ArchiveFile;
 import com.example.documentmanagementsystem.modules.archive.entity.ArchiveType;
-import com.example.documentmanagementsystem.modules.archive.entity.ArchiveVolume;
 import com.example.documentmanagementsystem.modules.archive.mapper.ArchiveFileMapper;
 import com.example.documentmanagementsystem.modules.archive.mapper.ArchiveFondsMapper;
 import com.example.documentmanagementsystem.modules.archive.mapper.ArchiveTypeMapper;
-import com.example.documentmanagementsystem.modules.archive.mapper.ArchiveVolumeMapper;
-import com.example.documentmanagementsystem.modules.archive.service.IArchiveVolumeService;
+import com.example.documentmanagementsystem.modules.archive.service.IArchiveFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -24,44 +23,45 @@ import org.springframework.util.StringUtils;
 import java.util.Objects;
 
 /**
- * 档案案卷服务实现（D9 只读；D10 完整 CRUD + 档号自动生成）
+ * 档案文件服务实现（D10 著录 + 档号自动生成）
  */
 @Slf4j
 @Service
-public class ArchiveVolumeServiceImpl extends ServiceImpl<ArchiveVolumeMapper, ArchiveVolume> implements IArchiveVolumeService {
+public class ArchiveFileServiceImpl extends ServiceImpl<ArchiveFileMapper, ArchiveFile> implements IArchiveFileService {
 
     private final ArchiveFondsMapper fondsMapper;
     private final ArchiveTypeMapper typeMapper;
-    private final ArchiveFileMapper fileMapper;
 
-    public ArchiveVolumeServiceImpl(ArchiveFondsMapper fondsMapper, ArchiveTypeMapper typeMapper, ArchiveFileMapper fileMapper) {
+    public ArchiveFileServiceImpl(ArchiveFondsMapper fondsMapper, ArchiveTypeMapper typeMapper) {
         this.fondsMapper = fondsMapper;
         this.typeMapper = typeMapper;
-        this.fileMapper = fileMapper;
     }
 
     @Override
-    public IPage<ArchiveVolume> pageVolumes(ArchiveVolumeQuery query) {
-        LambdaQueryWrapper<ArchiveVolume> wrapper = new LambdaQueryWrapper<>();
+    public IPage<ArchiveFile> pageFiles(ArchiveFileQuery query) {
+        LambdaQueryWrapper<ArchiveFile> wrapper = new LambdaQueryWrapper<>();
         if (query.getFondsId() != null) {
-            wrapper.eq(ArchiveVolume::getFondsId, query.getFondsId());
+            wrapper.eq(ArchiveFile::getFondsId, query.getFondsId());
         }
         if (query.getTypeId() != null) {
-            wrapper.eq(ArchiveVolume::getTypeId, query.getTypeId());
+            wrapper.eq(ArchiveFile::getTypeId, query.getTypeId());
+        }
+        if (query.getVolumeId() != null) {
+            wrapper.eq(ArchiveFile::getVolumeId, query.getVolumeId());
         }
         if (query.getYear() != null) {
-            wrapper.eq(ArchiveVolume::getYear, query.getYear());
+            wrapper.eq(ArchiveFile::getYear, query.getYear());
         }
         if (StringUtils.hasText(query.getTitle())) {
-            wrapper.like(ArchiveVolume::getTitle, query.getTitle());
+            wrapper.like(ArchiveFile::getTitle, query.getTitle());
         }
-        wrapper.orderByDesc(ArchiveVolume::getCreateTime);
+        wrapper.orderByDesc(ArchiveFile::getCreateTime);
         return this.page(new Page<>(query.getPageNum(), query.getPageSize()), wrapper);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void createVolume(ArchiveVolumeDTO dto) {
+    public void createFile(ArchiveFileDTO dto) {
         // 全宗/门类必须存在（档号需要全宗号与门类代码）
         ArchiveFonds fonds = fondsMapper.selectById(dto.getFondsId());
         if (fonds == null) {
@@ -74,62 +74,57 @@ public class ArchiveVolumeServiceImpl extends ServiceImpl<ArchiveVolumeMapper, A
         if (!Objects.equals(type.getFondsId(), dto.getFondsId())) {
             throw new ServiceException("门类不属于所选全宗");
         }
-        ArchiveVolume volume = new ArchiveVolume();
-        BeanUtils.copyProperties(dto, volume);
+        ArchiveFile file = new ArchiveFile();
+        BeanUtils.copyProperties(dto, file);
         // 自动生成档号：全宗号-门类代码-年度-四位序号（序号=该年度最大序号+1，档号不复用）
-        volume.setVolumeNo(generateVolumeNo(fonds.getFondsCode(), type.getTypeCode(), dto.getFondsId(), dto.getTypeId(), dto.getYear()));
-        if (volume.getStatus() == null) {
-            volume.setStatus(1);
+        file.setArchiveNo(generateArchiveNo(fonds.getFondsCode(), type.getTypeCode(), dto.getFondsId(), dto.getTypeId(), dto.getYear()));
+        if (file.getStatus() == null) {
+            file.setStatus(1);
         }
-        this.save(volume);
-        log.info("新增案卷: volumeNo={}, title={}", volume.getVolumeNo(), volume.getTitle());
+        this.save(file);
+        log.info("新增文件: archiveNo={}, title={}", file.getArchiveNo(), file.getTitle());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateVolume(ArchiveVolumeDTO dto) {
+    public void updateFile(ArchiveFileDTO dto) {
         if (dto.getId() == null) {
-            throw new ServiceException("案卷ID不能为空");
+            throw new ServiceException("文件ID不能为空");
         }
-        ArchiveVolume exist = this.getById(dto.getId());
+        ArchiveFile exist = this.getById(dto.getId());
         if (exist == null) {
-            throw new ServiceException("案卷不存在");
+            throw new ServiceException("文件不存在");
         }
-        // 全宗/门类/年度参与档号，不允许修改（档号不变）
+        // 全宗/门类/年度参与档号，不允许修改
         if (!Objects.equals(exist.getFondsId(), dto.getFondsId())
                 || !Objects.equals(exist.getTypeId(), dto.getTypeId())
                 || !Objects.equals(exist.getYear(), dto.getYear())) {
             throw new ServiceException("全宗/门类/年度不可修改（档号已生成）");
         }
-        ArchiveVolume volume = new ArchiveVolume();
-        BeanUtils.copyProperties(dto, volume);
+        ArchiveFile file = new ArchiveFile();
+        BeanUtils.copyProperties(dto, file);
         // 保留原档号
-        volume.setVolumeNo(exist.getVolumeNo());
-        this.updateById(volume);
-        log.info("编辑案卷: id={}, volumeNo={}", volume.getId(), exist.getVolumeNo());
+        file.setArchiveNo(exist.getArchiveNo());
+        this.updateById(file);
+        log.info("编辑文件: id={}, archiveNo={}", file.getId(), exist.getArchiveNo());
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteVolume(Long id) {
-        ArchiveVolume exist = this.getById(id);
+    public void deleteFile(Long id) {
+        ArchiveFile exist = this.getById(id);
         if (exist == null) {
-            throw new ServiceException("案卷不存在");
-        }
-        // 有文件引用时禁止删除
-        long fileCount = fileMapper.countByVolumeId(id);
-        if (fileCount > 0) {
-            throw new ServiceException("该案卷下存在 " + fileCount + " 个文件，无法删除");
+            throw new ServiceException("文件不存在");
         }
         this.removeById(id);
-        log.info("删除案卷: id={}, volumeNo={}", id, exist.getVolumeNo());
+        log.info("删除文件: id={}, archiveNo={}", id, exist.getArchiveNo());
     }
 
     /**
-     * 生成案卷档号：全宗号-门类代码-年度-四位序号
+     * 生成文件档号：全宗号-门类代码-年度-四位序号
      * 序号统计不排除已删除记录（档号不复用，避免逻辑删除后重建撞唯一索引）
      */
-    private String generateVolumeNo(String fondsCode, String typeCode, Long fondsId, Long typeId, Integer year) {
+    private String generateArchiveNo(String fondsCode, String typeCode, Long fondsId, Long typeId, Integer year) {
         Integer maxSeq = this.baseMapper.selectMaxSeq(fondsId, typeId, year);
         int next = (maxSeq == null ? 0 : maxSeq) + 1;
         return fondsCode + "-" + typeCode + "-" + year + "-" + String.format("%04d", next);

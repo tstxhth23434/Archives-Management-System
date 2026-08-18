@@ -33,8 +33,8 @@ const routes = [
       { path: 'archive/overview', name: 'ArchiveOverview', component: () => import('@/views/archive/overview/index.vue'), meta: { title: '档案浏览' } },
       { path: 'archive/fonds', name: 'FondsManage', component: () => import('@/views/archive/fonds/index.vue'), meta: { title: '全宗管理' } },
       { path: 'archive/type', name: 'TypeManage', component: () => import('@/views/archive/type/index.vue'), meta: { title: '门类管理' } },
-      { path: 'archive/volume', name: 'VolumeManage', component: () => import('@/views/Placeholder.vue'), meta: { title: '案卷管理' } },
-      { path: 'archive/file', name: 'FileManage', component: () => import('@/views/Placeholder.vue'), meta: { title: '档案管理' } }
+      { path: 'archive/volume', name: 'VolumeManage', component: () => import('@/views/archive/volume/index.vue'), meta: { title: '案卷管理' } },
+      { path: 'archive/file', name: 'FileManage', component: () => import('@/views/archive/file/index.vue'), meta: { title: '档案管理' } }
     ]
   },
   {

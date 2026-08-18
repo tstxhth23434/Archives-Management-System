@@ -50,3 +50,33 @@ export function getArchiveTree() {
 export function pageVolumes(params) {
   return request.get('/archive/volume/page', { params })
 }
+
+// ===== 案卷 CRUD（D10） =====
+export function addVolume(data) {
+  return request.post('/archive/volume', data)
+}
+
+export function updateVolume(data) {
+  return request.put('/archive/volume', data)
+}
+
+export function deleteVolume(id) {
+  return request.delete(`/archive/volume/${id}`)
+}
+
+// ===== 文件著录（D10） =====
+export function pageFiles(params) {
+  return request.get('/archive/file/page', { params })
+}
+
+export function addFile(data) {
+  return request.post('/archive/file', data)
+}
+
+export function updateFile(data) {
+  return request.put('/archive/file', data)
+}
+
+export function deleteFile(id) {
+  return request.delete(`/archive/file/${id}`)
+}

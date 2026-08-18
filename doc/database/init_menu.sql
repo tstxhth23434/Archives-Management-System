@@ -58,7 +58,15 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_name`, `menu_title`, `menu_type
 (38, 8, '门类删除', '删除门类', 3, NULL, NULL, NULL, 'archive:type:delete', 4, 1),
 -- 档案浏览页 + 案卷查询按钮（D9 档案树）
 (39, 2, '档案浏览', '档案浏览', 2, 'Files', '/archive/overview', 'archive/overview/index', NULL, 0, 1),
-(40, 39, '案卷查询', '查询案卷', 3, NULL, NULL, NULL, 'archive:volume:query', 1, 1)
+(40, 39, '案卷查询', '查询案卷', 3, NULL, NULL, NULL, 'archive:volume:query', 1, 1),
+-- 案卷/文件按钮权限（D10 档号生成 + 著录）
+(41, 9,  '案卷新增', '新增案卷', 3, NULL, NULL, NULL, 'archive:volume:add', 1, 1),
+(42, 9,  '案卷编辑', '编辑案卷', 3, NULL, NULL, NULL, 'archive:volume:edit', 2, 1),
+(43, 9,  '案卷删除', '删除案卷', 3, NULL, NULL, NULL, 'archive:volume:delete', 3, 1),
+(44, 10, '文件查询', '查询文件', 3, NULL, NULL, NULL, 'archive:file:query', 1, 1),
+(45, 10, '文件新增', '新增文件', 3, NULL, NULL, NULL, 'archive:file:add', 2, 1),
+(46, 10, '文件编辑', '编辑文件', 3, NULL, NULL, NULL, 'archive:file:edit', 3, 1),
+(47, 10, '文件删除', '删除文件', 3, NULL, NULL, NULL, 'archive:file:delete', 4, 1)
 ON DUPLICATE KEY UPDATE `menu_name` = VALUES(`menu_name`);
 
 -- 2. 角色菜单分配
@@ -67,9 +75,9 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 SELECT 1, `id` FROM `sys_menu`
 ON DUPLICATE KEY UPDATE `role_id` = `role_id`;
 
--- 档案管理员（role_id=2）：档案管理目录 + 全宗/门类/案卷/档案 + 档案按钮权限 + 档案浏览/案卷查询
+-- 档案管理员（role_id=2）：档案管理全部菜单 + 按钮权限 + 档案浏览
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-SELECT 2, `id` FROM `sys_menu` WHERE `id` IN (2, 7, 8, 9, 10, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40)
+SELECT 2, `id` FROM `sys_menu` WHERE `id` IN (2, 7, 8, 9, 10, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47)
 ON DUPLICATE KEY UPDATE `role_id` = `role_id`;
 
 -- 普通用户（role_id=3）：暂不分配菜单（待 D8+ 检索利用/借阅菜单就绪后在此补充）
