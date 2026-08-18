@@ -26,10 +26,10 @@ const routes = [
         component: () => import('@/views/system/user/index.vue'),
         meta: { title: '用户管理' }
       },
-      { path: 'system/role', name: 'RoleManage', component: () => import('@/views/Placeholder.vue'), meta: { title: '角色管理' } },
+      { path: 'system/role', name: 'RoleManage', component: () => import('@/views/system/role/index.vue'), meta: { title: '角色管理' } },
       { path: 'system/menu', name: 'MenuManage', component: () => import('@/views/Placeholder.vue'), meta: { title: '菜单管理' } },
       { path: 'system/dict', name: 'DictManage', component: () => import('@/views/Placeholder.vue'), meta: { title: '字典管理' } },
-      { path: 'system/log', name: 'LogManage', component: () => import('@/views/Placeholder.vue'), meta: { title: '操作日志' } },
+      { path: 'system/log', name: 'LogManage', component: () => import('@/views/system/log/index.vue'), meta: { title: '操作日志' } },
       { path: 'archive/overview', name: 'ArchiveOverview', component: () => import('@/views/archive/overview/index.vue'), meta: { title: '档案浏览' } },
       { path: 'archive/fonds', name: 'FondsManage', component: () => import('@/views/archive/fonds/index.vue'), meta: { title: '全宗管理' } },
       { path: 'archive/type', name: 'TypeManage', component: () => import('@/views/archive/type/index.vue'), meta: { title: '门类管理' } },
