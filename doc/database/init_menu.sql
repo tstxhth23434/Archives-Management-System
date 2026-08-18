@@ -46,7 +46,16 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_name`, `menu_title`, `menu_type
 (28, 6, '字典查询', '查询字典', 3, NULL, NULL, NULL, 'system:dict:query', 4, 1),
 -- 操作日志菜单 + 查询按钮
 (29, 1, '操作日志', '操作日志', 2, 'Tickets', '/system/log', 'system/log/index', NULL, 5, 1),
-(30, 29, '日志查询', '查询日志', 3, NULL, NULL, NULL, 'system:log:query', 1, 1)
+(30, 29, '日志查询', '查询日志', 3, NULL, NULL, NULL, 'system:log:query', 1, 1),
+-- 档案按钮权限（D8 全宗/门类）
+(31, 7, '全宗查询', '查询全宗', 3, NULL, NULL, NULL, 'archive:fonds:query', 1, 1),
+(32, 7, '全宗新增', '新增全宗', 3, NULL, NULL, NULL, 'archive:fonds:add', 2, 1),
+(33, 7, '全宗编辑', '编辑全宗', 3, NULL, NULL, NULL, 'archive:fonds:edit', 3, 1),
+(34, 7, '全宗删除', '删除全宗', 3, NULL, NULL, NULL, 'archive:fonds:delete', 4, 1),
+(35, 8, '门类查询', '查询门类', 3, NULL, NULL, NULL, 'archive:type:query', 1, 1),
+(36, 8, '门类新增', '新增门类', 3, NULL, NULL, NULL, 'archive:type:add', 2, 1),
+(37, 8, '门类编辑', '编辑门类', 3, NULL, NULL, NULL, 'archive:type:edit', 3, 1),
+(38, 8, '门类删除', '删除门类', 3, NULL, NULL, NULL, 'archive:type:delete', 4, 1)
 ON DUPLICATE KEY UPDATE `menu_name` = VALUES(`menu_name`);
 
 -- 2. 角色菜单分配
@@ -55,9 +64,9 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 SELECT 1, `id` FROM `sys_menu`
 ON DUPLICATE KEY UPDATE `role_id` = `role_id`;
 
--- 档案管理员（role_id=2）：档案管理目录 + 全宗/门类/案卷/档案
+-- 档案管理员（role_id=2）：档案管理目录 + 全宗/门类/案卷/档案 + 档案按钮权限
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-SELECT 2, `id` FROM `sys_menu` WHERE `id` IN (2, 7, 8, 9, 10)
+SELECT 2, `id` FROM `sys_menu` WHERE `id` IN (2, 7, 8, 9, 10, 31, 32, 33, 34, 35, 36, 37, 38)
 ON DUPLICATE KEY UPDATE `role_id` = `role_id`;
 
 -- 普通用户（role_id=3）：暂不分配菜单（待 D8+ 检索利用/借阅菜单就绪后在此补充）

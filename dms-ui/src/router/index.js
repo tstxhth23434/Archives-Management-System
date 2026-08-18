@@ -30,8 +30,8 @@ const routes = [
       { path: 'system/menu', name: 'MenuManage', component: () => import('@/views/Placeholder.vue'), meta: { title: '菜单管理' } },
       { path: 'system/dict', name: 'DictManage', component: () => import('@/views/Placeholder.vue'), meta: { title: '字典管理' } },
       { path: 'system/log', name: 'LogManage', component: () => import('@/views/Placeholder.vue'), meta: { title: '操作日志' } },
-      { path: 'archive/fonds', name: 'FondsManage', component: () => import('@/views/Placeholder.vue'), meta: { title: '全宗管理' } },
-      { path: 'archive/type', name: 'TypeManage', component: () => import('@/views/Placeholder.vue'), meta: { title: '门类管理' } },
+      { path: 'archive/fonds', name: 'FondsManage', component: () => import('@/views/archive/fonds/index.vue'), meta: { title: '全宗管理' } },
+      { path: 'archive/type', name: 'TypeManage', component: () => import('@/views/archive/type/index.vue'), meta: { title: '门类管理' } },
       { path: 'archive/volume', name: 'VolumeManage', component: () => import('@/views/Placeholder.vue'), meta: { title: '案卷管理' } },
       { path: 'archive/file', name: 'FileManage', component: () => import('@/views/Placeholder.vue'), meta: { title: '档案管理' } }
     ]
