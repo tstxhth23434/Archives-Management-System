@@ -145,6 +145,7 @@ const itemFormRef = ref(null)
 const itemList = ref([])
 const currentDictCode = ref('')
 const currentDictName = ref('')
+const currentDictId = ref(null)
 
 const query = reactive({ dictName: '', pageNum: 1, pageSize: 10 })
 
@@ -237,6 +238,7 @@ async function handleDelete(row) {
 async function openItems(row) {
   currentDictCode.value = row.dictCode
   currentDictName.value = row.dictName
+  currentDictId.value = row.id
   itemsVisible.value = true
   await fetchItems()
 }
@@ -273,7 +275,7 @@ async function handleItemSubmit() {
         await updateDictItem(itemForm)
         ElMessage.success('修改成功')
       } else {
-        await addDictItem({ ...itemForm, dictId: itemList.value.length ? itemList.value[0].dictId : undefined })
+        await addDictItem({ ...itemForm, dictId: currentDictId.value })
         ElMessage.success('新增成功')
       }
       itemDialogVisible.value = false

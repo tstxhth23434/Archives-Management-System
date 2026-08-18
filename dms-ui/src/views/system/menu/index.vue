@@ -40,7 +40,7 @@
         </el-table-column>
         <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
-            <el-button v-if="userStore.hasPerm('system:menu:add')" link type="primary" @click="openAdd(row)">新增子级</el-button>
+            <el-button v-if="userStore.hasPerm('system:menu:add') && row.menuType !== 3" link type="primary" @click="openAdd(row)">新增子级</el-button>
             <el-button v-if="userStore.hasPerm('system:menu:edit')" link type="primary" @click="openEdit(row)">编辑</el-button>
             <el-button v-if="userStore.hasPerm('system:menu:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
@@ -162,8 +162,22 @@ function openEdit(row) {
     menuType: row.menuType, icon: row.icon, path: row.path, component: row.component,
     perms: row.perms, sort: row.sort, status: row.status
   })
-  parentOptions.value = tableData.value
+  // 父级下拉过滤自身+全部后代,避免把菜单挂到子孙下形成环(buildTree 递归会丢失整支)
+  parentOptions.value = filterOutSelfAndDescendants(tableData.value, row.id)
   dialogVisible.value = true
+}
+
+/**
+ * 从树中剔除指定节点及其全部后代
+ */
+function filterOutSelfAndDescendants(nodes, excludeId) {
+  const result = []
+  nodes.forEach((n) => {
+    if (n.id === excludeId) return
+    const children = n.children ? filterOutSelfAndDescendants(n.children, excludeId) : []
+    result.push({ ...n, children })
+  })
+  return result
 }
 
 function resetForm() {
