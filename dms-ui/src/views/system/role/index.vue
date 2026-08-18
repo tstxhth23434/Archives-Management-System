@@ -33,7 +33,7 @@
         <el-table-column label="操作" width="210" fixed="right">
           <template #default="{ row }">
             <el-button v-if="userStore.hasPerm('system:role:edit')" link type="primary" @click="openEdit(row)">编辑</el-button>
-            <el-button v-if="userStore.hasPerm('system:role:edit')" link type="success" @click="openAssign(row)">分配菜单</el-button>
+            <el-button v-if="userStore.hasPerm('system:role:edit') && userStore.hasPerm('system:menu:query')" link type="success" @click="openAssign(row)">分配菜单</el-button>
             <el-button v-if="userStore.hasPerm('system:role:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -79,7 +79,7 @@
     </el-dialog>
 
     <!-- 分配菜单弹窗 -->
-    <el-dialog v-model="assignVisible" :title="`分配菜单：${assignRoleName}`" width="420px">
+    <el-dialog v-model="assignVisible" :title="`分配菜单：${assignRoleName}`" width="420px" destroy-on-close>
       <el-tree
         ref="menuTreeRef"
         :data="menuTree"
@@ -87,7 +87,6 @@
         :props="{ label: 'menuTitle', children: 'children' }"
         show-checkbox
         default-expand-all
-        :default-checked-keys="checkedMenuIds"
       />
       <template #footer>
         <el-button @click="assignVisible = false">取消</el-button>
@@ -98,7 +97,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, nextTick, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
@@ -212,11 +211,34 @@ async function openAssign(row) {
       getRoleMenus(row.id)
     ])
     menuTree.value = tree
-    checkedMenuIds.value = ids || []
+    checkedMenuIds.value = collectLeafIds(tree, ids)
     assignVisible.value = true
+    // destroy-on-close 保证每次打开重新挂载;nextTick 后精确回显叶子节点勾选(父级半选由子级推导)
+    await nextTick()
+    menuTreeRef.value?.setCheckedKeys(checkedMenuIds.value)
   } catch (e) {
     // 错误提示已由拦截器统一弹出
   }
+}
+
+/**
+ * 从已分配菜单 id 中过滤出树里的叶子节点
+ * 父目录半选状态不应直接 setCheckedKeys(会联动勾选全部子级),只回显叶子,父级自动半选
+ */
+function collectLeafIds(tree, ids) {
+  const idSet = new Set(ids || [])
+  const leafIds = []
+  const walk = (nodes) => {
+    nodes.forEach((n) => {
+      if (!n.children || n.children.length === 0) {
+        if (idSet.has(n.id)) leafIds.push(n.id)
+      } else {
+        walk(n.children)
+      }
+    })
+  }
+  walk(tree || [])
+  return leafIds
 }
 
 async function handleAssign() {
