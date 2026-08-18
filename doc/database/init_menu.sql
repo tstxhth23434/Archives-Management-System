@@ -55,7 +55,10 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_name`, `menu_title`, `menu_type
 (35, 8, '门类查询', '查询门类', 3, NULL, NULL, NULL, 'archive:type:query', 1, 1),
 (36, 8, '门类新增', '新增门类', 3, NULL, NULL, NULL, 'archive:type:add', 2, 1),
 (37, 8, '门类编辑', '编辑门类', 3, NULL, NULL, NULL, 'archive:type:edit', 3, 1),
-(38, 8, '门类删除', '删除门类', 3, NULL, NULL, NULL, 'archive:type:delete', 4, 1)
+(38, 8, '门类删除', '删除门类', 3, NULL, NULL, NULL, 'archive:type:delete', 4, 1),
+-- 档案浏览页 + 案卷查询按钮（D9 档案树）
+(39, 2, '档案浏览', '档案浏览', 2, 'Files', '/archive/overview', 'archive/overview/index', NULL, 0, 1),
+(40, 39, '案卷查询', '查询案卷', 3, NULL, NULL, NULL, 'archive:volume:query', 1, 1)
 ON DUPLICATE KEY UPDATE `menu_name` = VALUES(`menu_name`);
 
 -- 2. 角色菜单分配
@@ -64,9 +67,9 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 SELECT 1, `id` FROM `sys_menu`
 ON DUPLICATE KEY UPDATE `role_id` = `role_id`;
 
--- 档案管理员（role_id=2）：档案管理目录 + 全宗/门类/案卷/档案 + 档案按钮权限
+-- 档案管理员（role_id=2）：档案管理目录 + 全宗/门类/案卷/档案 + 档案按钮权限 + 档案浏览/案卷查询
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-SELECT 2, `id` FROM `sys_menu` WHERE `id` IN (2, 7, 8, 9, 10, 31, 32, 33, 34, 35, 36, 37, 38)
+SELECT 2, `id` FROM `sys_menu` WHERE `id` IN (2, 7, 8, 9, 10, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40)
 ON DUPLICATE KEY UPDATE `role_id` = `role_id`;
 
 -- 普通用户（role_id=3）：暂不分配菜单（待 D8+ 检索利用/借阅菜单就绪后在此补充）

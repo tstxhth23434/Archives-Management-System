@@ -41,3 +41,12 @@ export function updateType(data) {
 export function deleteType(id) {
   return request.delete(`/archive/type/${id}`)
 }
+
+// ===== 档案树 + 案卷查询（D9） =====
+export function getArchiveTree() {
+  return request.get('/archive/tree')
+}
+
+export function pageVolumes(params) {
+  return request.get('/archive/volume/page', { params })
+}
