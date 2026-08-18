@@ -1,5 +1,6 @@
 package com.example.documentmanagementsystem.modules.system.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.example.documentmanagementsystem.common.annotation.OpLog;
 import com.example.documentmanagementsystem.common.base.BaseController;
@@ -41,18 +42,21 @@ public class RoleController extends BaseController {
     private ISysMenuService menuService;
 
     @ApiOperation("分页查询角色")
+    @SaCheckPermission("system:role:query")
     @GetMapping("/page")
     public Result<IPage<SysRole>> page(RoleQuery query) {
         return success(roleService.pageRoles(query));
     }
 
     @ApiOperation("查询全部启用角色（下拉框用）")
+    @SaCheckPermission("system:role:query")
     @GetMapping("/list")
     public Result<List<SysRole>> list() {
         return success(roleService.listEnabledRoles());
     }
 
     @ApiOperation("新增角色")
+    @SaCheckPermission("system:role:add")
     @OpLog("新增角色")
     @PostMapping
     public Result<Void> add(@Validated @RequestBody RoleDTO dto) {
@@ -61,6 +65,7 @@ public class RoleController extends BaseController {
     }
 
     @ApiOperation("编辑角色")
+    @SaCheckPermission("system:role:edit")
     @OpLog("编辑角色")
     @PutMapping
     public Result<Void> edit(@Validated @RequestBody RoleDTO dto) {
@@ -69,6 +74,7 @@ public class RoleController extends BaseController {
     }
 
     @ApiOperation("删除角色")
+    @SaCheckPermission("system:role:delete")
     @OpLog("删除角色")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
@@ -77,12 +83,14 @@ public class RoleController extends BaseController {
     }
 
     @ApiOperation("查询角色已分配的菜单ID列表")
+    @SaCheckPermission("system:role:query")
     @GetMapping("/{id}/menus")
     public Result<List<Long>> listMenus(@PathVariable Long id) {
         return success(menuService.listMenuIdsByRole(id));
     }
 
     @ApiOperation("给角色分配菜单")
+    @SaCheckPermission("system:role:edit")
     @OpLog("角色分配菜单")
     @PostMapping("/{id}/menus")
     public Result<Void> assignMenus(@PathVariable Long id, @RequestBody List<Long> menuIds) {

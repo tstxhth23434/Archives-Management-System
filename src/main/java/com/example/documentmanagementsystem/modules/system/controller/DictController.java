@@ -37,6 +37,7 @@ public class DictController extends BaseController {
     private ISysDictService dictService;
 
     @ApiOperation("分页查询字典类型")
+    @SaCheckPermission("system:dict:query")
     @GetMapping("/page")
     public Result<IPage<SysDict>> page(@RequestParam(required = false) String dictName,
                                        @RequestParam(defaultValue = "1") Integer pageNum,

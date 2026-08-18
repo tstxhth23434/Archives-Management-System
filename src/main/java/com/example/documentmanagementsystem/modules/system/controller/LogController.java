@@ -1,5 +1,6 @@
 package com.example.documentmanagementsystem.modules.system.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -30,6 +31,7 @@ public class LogController extends BaseController {
     private SysLogMapper sysLogMapper;
 
     @ApiOperation("分页查询操作日志")
+    @SaCheckPermission("system:log:query")
     @GetMapping("/page")
     public Result<IPage<SysLog>> page(@RequestParam(required = false) String username,
                                       @RequestParam(required = false) String operation,

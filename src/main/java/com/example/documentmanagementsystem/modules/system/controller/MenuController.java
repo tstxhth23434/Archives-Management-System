@@ -1,5 +1,6 @@
 package com.example.documentmanagementsystem.modules.system.controller;
 
+import cn.dev33.satoken.annotation.SaCheckPermission;
 import com.example.documentmanagementsystem.common.annotation.OpLog;
 import com.example.documentmanagementsystem.common.base.BaseController;
 import com.example.documentmanagementsystem.common.result.Result;
@@ -35,12 +36,14 @@ public class MenuController extends BaseController {
     private ISysMenuService menuService;
 
     @ApiOperation("查询菜单树（管理端）")
+    @SaCheckPermission("system:menu:query")
     @GetMapping("/tree")
     public Result<List<SysMenu>> tree() {
         return success(menuService.listMenuTree());
     }
 
     @ApiOperation("新增菜单")
+    @SaCheckPermission("system:menu:add")
     @OpLog("新增菜单")
     @PostMapping
     public Result<Void> add(@Validated @RequestBody MenuDTO dto) {
@@ -49,6 +52,7 @@ public class MenuController extends BaseController {
     }
 
     @ApiOperation("编辑菜单")
+    @SaCheckPermission("system:menu:edit")
     @OpLog("编辑菜单")
     @PutMapping
     public Result<Void> edit(@Validated @RequestBody MenuDTO dto) {
@@ -57,6 +61,7 @@ public class MenuController extends BaseController {
     }
 
     @ApiOperation("删除菜单")
+    @SaCheckPermission("system:menu:delete")
     @OpLog("删除菜单")
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {

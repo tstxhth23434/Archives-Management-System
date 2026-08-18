@@ -38,10 +38,26 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_name`, `menu_title`, `menu_type
 -- 字典管理按钮权限
 (22, 6, '字典新增', '新增字典', 3, NULL, NULL, NULL, 'system:dict:add',    1, 1),
 (23, 6, '字典编辑', '编辑字典', 3, NULL, NULL, NULL, 'system:dict:edit',   2, 1),
-(24, 6, '字典删除', '删除字典', 3, NULL, NULL, NULL, 'system:dict:delete', 3, 1)
+(24, 6, '字典删除', '删除字典', 3, NULL, NULL, NULL, 'system:dict:delete', 3, 1),
+-- 查询按钮权限（D5 权限收紧：读接口也受 @SaCheckPermission 控制）
+(25, 3, '用户查询', '查询用户', 3, NULL, NULL, NULL, 'system:user:query', 6, 1),
+(26, 4, '角色查询', '查询角色', 3, NULL, NULL, NULL, 'system:role:query', 4, 1),
+(27, 5, '菜单查询', '查询菜单', 3, NULL, NULL, NULL, 'system:menu:query', 4, 1),
+(28, 6, '字典查询', '查询字典', 3, NULL, NULL, NULL, 'system:dict:query', 4, 1),
+-- 操作日志菜单 + 查询按钮
+(29, 1, '操作日志', '操作日志', 2, 'Tickets', '/system/log', 'system/log/index', NULL, 5, 1),
+(30, 29, '日志查询', '查询日志', 3, NULL, NULL, NULL, 'system:log:query', 1, 1)
 ON DUPLICATE KEY UPDATE `menu_name` = VALUES(`menu_name`);
 
--- 2. 超级管理员（role_id=1）分配全部菜单
+-- 2. 角色菜单分配
+-- 超级管理员（role_id=1）：全部菜单
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 SELECT 1, `id` FROM `sys_menu`
 ON DUPLICATE KEY UPDATE `role_id` = `role_id`;
+
+-- 档案管理员（role_id=2）：档案管理目录 + 全宗/门类/案卷/档案
+INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
+SELECT 2, `id` FROM `sys_menu` WHERE `id` IN (2, 7, 8, 9, 10)
+ON DUPLICATE KEY UPDATE `role_id` = `role_id`;
+
+-- 普通用户（role_id=3）：暂不分配菜单（待 D8+ 检索利用/借阅菜单就绪后在此补充）

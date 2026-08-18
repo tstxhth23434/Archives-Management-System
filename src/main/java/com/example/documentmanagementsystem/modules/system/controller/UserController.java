@@ -38,12 +38,14 @@ public class UserController extends BaseController {
     private ISysUserService sysUserService;
 
     @ApiOperation("分页查询用户")
+    @SaCheckPermission("system:user:query")
     @GetMapping("/page")
     public Result<IPage<SysUser>> page(UserQuery query) {
         return success(sysUserService.pageUsers(query));
     }
 
     @ApiOperation("新增用户")
+    @SaCheckPermission("system:user:add")
     @OpLog("新增用户")
     @PostMapping
     public Result<Void> add(@Validated @RequestBody UserDTO dto) {
@@ -52,6 +54,7 @@ public class UserController extends BaseController {
     }
 
     @ApiOperation("编辑用户")
+    @SaCheckPermission("system:user:edit")
     @OpLog("编辑用户")
     @PutMapping
     public Result<Void> edit(@Validated @RequestBody UserDTO dto) {

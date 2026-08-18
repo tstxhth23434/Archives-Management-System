@@ -13,9 +13,9 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      // 前端请求 /api/** 转发到后端 8080，避免跨域
+      // 前端请求 /api/** 转发到后端 8081（8080 被本机参考系统占用，DMS 后端常驻 8081）
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8081',
         changeOrigin: true
       }
     }
