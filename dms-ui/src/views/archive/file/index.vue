@@ -168,14 +168,22 @@ const retentionMap = {}
 const securityMap = {}
 const statusMap = { 1: '整理中', 2: '已归档', 3: '已封库' }
 
-// 案卷 id → 题名 映射（所属案卷列展示）
-const volumeMap = {}
+// 案卷 id → 题名 映射（所属案卷列展示）——用 ref 保证响应式
+const volumeMap = ref({})
 
 async function loadVolumeMap() {
   try {
-    const data = await pageVolumes({ pageNum: 1, pageSize: 100 })
-    Object.keys(volumeMap).forEach((k) => delete volumeMap[k])
-    data.records.forEach((v) => { volumeMap[v.id] = v.title })
+    const map = {}
+    let page = 1
+    const size = 100
+    // 循环翻页拉全量案卷，避免 >100 个案卷时映射缺失
+    while (true) {
+      const data = await pageVolumes({ pageNum: page, pageSize: size })
+      data.records.forEach((v) => { map[v.id] = v.title })
+      if (data.records.length < size || data.total <= page * size) break
+      page++
+    }
+    volumeMap.value = map
   } catch (e) {
     // 案卷映射加载失败不影响列表
   }
@@ -339,11 +347,12 @@ async function handleDelete(row) {
   fetchData()
 }
 
-onMounted(() => {
+onMounted(async () => {
   fetchFonds()
   fetchTypes()
   fetchDict()
-  loadVolumeMap()
+  // 先加载案卷映射再查列表，避免首屏所属案卷列显示为 -
+  await loadVolumeMap()
   fetchData()
 })
 </script>
