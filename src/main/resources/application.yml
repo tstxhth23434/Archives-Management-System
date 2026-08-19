@@ -80,8 +80,8 @@ sa-token:
 
 # 档案系统自定义配置
 dms:
-  # 文件上传存储路径（Windows 下用双反斜杠或正斜杠）
-  upload-path: ${user.home}/dms-uploads/
+  # 文件上传存储路径（Windows 下用双反斜杠或正斜杠；含空格需引号）
+  upload-path: "D:/Document Management System/Document Management System/Upload file/"
   # 允许上传的文件类型
   allowed-extensions: pdf,doc,docx,xls,xlsx,ppt,pptx,txt,zip,rar,jpg,jpeg,png,gif,bmp,mp4,avi,mp3,wav
   # 档号前缀分隔符
