@@ -80,3 +80,33 @@ export function updateFile(data) {
 export function deleteFile(id) {
   return request.delete(`/archive/file/${id}`)
 }
+
+// ===== 电子原文（D12） =====
+export function uploadElectronic(archiveId, file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request.post(`/archive/electronic/upload?archiveId=${archiveId}`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+}
+
+export function listElectronics(archiveId) {
+  return request.get('/archive/electronic/list', { params: { archiveId } })
+}
+
+export async function downloadElectronic(id, fileName) {
+  const blob = await request.get(`/archive/electronic/download/${id}`, { responseType: 'blob' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = fileName || 'download'
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
+
+export function deleteElectronic(id) {
+  return request.delete(`/archive/electronic/${id}`)
+}
+

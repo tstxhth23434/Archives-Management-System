@@ -41,8 +41,9 @@
             <el-tag :type="statusTagType(row.status)" size="small">{{ statusMap[row.status] || '-' }}</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="140" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
+            <el-button v-if="userStore.hasPerm('archive:file:query')" link type="success" @click="openElectronics(row)">原文</el-button>
             <el-button v-if="userStore.hasPerm('archive:file:edit')" link type="primary" @click="openEdit(row)">编辑</el-button>
             <el-button v-if="userStore.hasPerm('archive:file:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
@@ -62,6 +63,36 @@
         />
       </div>
     </el-card>
+
+    <!-- 电子原文管理弹窗（D12） -->
+    <el-dialog v-model="elecVisible" :title="`电子原文：${currentFile?.title}`" width="700px" destroy-on-close>
+      <div class="search-bar" style="margin-bottom: 12px">
+        <el-upload
+          :show-file-list="false"
+          :http-request="handleUpload"
+          :disabled="!userStore.hasPerm('archive:file:edit')"
+        >
+          <el-button v-if="userStore.hasPerm('archive:file:edit')" type="primary" :loading="uploading">
+            <el-icon><Upload /></el-icon> 上传原文
+          </el-button>
+        </el-upload>
+        <el-tag style="margin-left: 8px" type="info">支持 pdf/doc/docx/xls/xlsx/ppt/pptx/txt/图片等,最大 50MB</el-tag>
+      </div>
+      <el-table :data="elecList" v-loading="elecLoading" size="small" empty-text="暂无电子原文">
+        <el-table-column prop="fileName" label="文件名" min-width="200" show-overflow-tooltip />
+        <el-table-column label="大小" width="90">
+          <template #default="{ row }">{{ formatSize(row.fileSize) }}</template>
+        </el-table-column>
+        <el-table-column prop="fileSuffix" label="类型" width="70" />
+        <el-table-column prop="uploadTime" label="上传时间" min-width="160" />
+        <el-table-column label="操作" width="130">
+          <template #default="{ row }">
+            <el-button link type="primary" size="small" @click="handleDownload(row)">下载</el-button>
+            <el-button v-if="userStore.hasPerm('archive:file:delete')" link type="danger" size="small" @click="handleElecDelete(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
 
     <!-- 新增/编辑弹窗 -->
     <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑文件' : '新增文件（档号自动生成）'" width="560px" @close="resetForm">
@@ -131,9 +162,9 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, Upload } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
-import { pageFiles, addFile, updateFile, deleteFile, listFonds, listTypes, pageVolumes } from '@/api/archive'
+import { pageFiles, addFile, updateFile, deleteFile, listFonds, listTypes, pageVolumes, uploadElectronic, listElectronics, downloadElectronic, deleteElectronic } from '@/api/archive'
 import request from '@/api/request'
 
 const userStore = useUserStore()
@@ -265,6 +296,61 @@ async function onFormTypeChange(typeId) {
   } catch (e) {
     formVolumeOptions.value = []
   }
+}
+
+// 电子原文管理（D12）
+const elecVisible = ref(false)
+const elecLoading = ref(false)
+const uploading = ref(false)
+const currentFile = ref(null)
+const elecList = ref([])
+
+async function openElectronics(row) {
+  currentFile.value = row
+  elecVisible.value = true
+  elecLoading.value = true
+  try {
+    elecList.value = await listElectronics(row.id)
+  } catch (e) {
+    elecList.value = []
+  } finally {
+    elecLoading.value = false
+  }
+}
+
+async function handleUpload(options) {
+  uploading.value = true
+  try {
+    await uploadElectronic(currentFile.value.id, options.file)
+    ElMessage.success('上传成功')
+    elecList.value = await listElectronics(currentFile.value.id)
+  } catch (e) {
+    // 错误提示已由拦截器统一弹出
+  } finally {
+    uploading.value = false
+  }
+}
+
+function formatSize(bytes) {
+  if (!bytes && bytes !== 0) return '-'
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / 1024 / 1024).toFixed(1) + ' MB'
+}
+
+async function handleDownload(row) {
+  try {
+    await downloadElectronic(row.id, row.fileName)
+  } catch (e) {
+    // 错误提示已由拦截器统一弹出
+  }
+}
+
+async function handleElecDelete(row) {
+  await ElMessageBox.confirm(`确认删除原文「${row.fileName}」？`, '提示', { type: 'warning' })
+  await deleteElectronic(row.id)
+  ElMessage.success('删除成功')
+  elecList.value = await listElectronics(currentFile.value.id)
 }
 
 async function fetchData() {

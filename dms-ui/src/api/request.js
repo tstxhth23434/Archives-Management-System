@@ -24,6 +24,10 @@ request.interceptors.request.use(
 request.interceptors.response.use(
   (response) => {
     const res = response.data
+    // Blob 响应（文件下载）直接返回，不按 Result 判断
+    if (res instanceof Blob) {
+      return res
+    }
     // 成功：直接返回 data 业务数据
     if (res.code === 200) {
       return res.data
