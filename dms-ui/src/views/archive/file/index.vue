@@ -25,6 +25,9 @@
       <!-- 表格 -->
       <el-table :data="tableData" v-loading="loading" style="margin-top: 16px">
         <el-table-column prop="archiveNo" label="档号" min-width="180" />
+        <el-table-column label="所属案卷" min-width="150">
+          <template #default="{ row }">{{ volumeMap[row.volumeId] || '-' }}</template>
+        </el-table-column>
         <el-table-column prop="title" label="题名" min-width="200" show-overflow-tooltip />
         <el-table-column prop="author" label="责任者" min-width="100" />
         <el-table-column prop="docDate" label="文件日期" width="110" />
@@ -164,6 +167,19 @@ const rules = {
 const retentionMap = {}
 const securityMap = {}
 const statusMap = { 1: '整理中', 2: '已归档', 3: '已封库' }
+
+// 案卷 id → 题名 映射（所属案卷列展示）
+const volumeMap = {}
+
+async function loadVolumeMap() {
+  try {
+    const data = await pageVolumes({ pageNum: 1, pageSize: 100 })
+    Object.keys(volumeMap).forEach((k) => delete volumeMap[k])
+    data.records.forEach((v) => { volumeMap[v.id] = v.title })
+  } catch (e) {
+    // 案卷映射加载失败不影响列表
+  }
+}
 
 function statusTagType(status) {
   return { 1: 'warning', 2: 'success', 3: 'info' }[status] || 'info'
@@ -327,6 +343,7 @@ onMounted(() => {
   fetchFonds()
   fetchTypes()
   fetchDict()
+  loadVolumeMap()
   fetchData()
 })
 </script>

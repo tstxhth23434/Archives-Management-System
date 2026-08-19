@@ -33,8 +33,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="createTime" label="创建时间" min-width="170" />
-        <el-table-column label="操作" width="140" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
+            <el-button v-if="userStore.hasPerm('archive:file:query')" link type="success" @click="openFiles(row)">文件</el-button>
             <el-button v-if="userStore.hasPerm('archive:volume:edit')" link type="primary" @click="openEdit(row)">编辑</el-button>
             <el-button v-if="userStore.hasPerm('archive:volume:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
@@ -54,6 +55,29 @@
         />
       </div>
     </el-card>
+
+    <!-- 案卷详情弹窗（含该案卷下文件列表，从属关系） -->
+    <el-dialog v-model="filesVisible" :title="`案卷详情：${currentVolume?.volumeNo}`" width="760px" destroy-on-close>
+      <el-descriptions :column="3" border size="small" style="margin-bottom: 16px">
+        <el-descriptions-item label="档号">{{ currentVolume?.volumeNo }}</el-descriptions-item>
+        <el-descriptions-item label="年度">{{ currentVolume?.year }}</el-descriptions-item>
+        <el-descriptions-item label="状态">{{ statusMap[currentVolume?.status] || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="题名" :span="2">{{ currentVolume?.title }}</el-descriptions-item>
+        <el-descriptions-item label="保管期限">{{ retentionMap[currentVolume?.retentionPeriod] || '-' }}</el-descriptions-item>
+      </el-descriptions>
+      <el-table :data="fileList" v-loading="filesLoading" size="small" empty-text="该案卷下暂无文件">
+        <el-table-column prop="archiveNo" label="档号" min-width="160" />
+        <el-table-column prop="title" label="题名" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="author" label="责任者" min-width="90" />
+        <el-table-column prop="docDate" label="文件日期" width="100" />
+        <el-table-column prop="pages" label="页数" width="60" />
+        <el-table-column label="状态" width="80">
+          <template #default="{ row }">
+            <el-tag :type="statusTagType(row.status)" size="small">{{ statusMap[row.status] || '-' }}</el-tag>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
 
     <!-- 新增/编辑弹窗 -->
     <el-dialog v-model="dialogVisible" :title="isEdit ? '编辑案卷' : '新增案卷（档号自动生成）'" width="520px" @close="resetForm">
@@ -105,7 +129,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
-import { pageVolumes, addVolume, updateVolume, deleteVolume, listFonds, listTypes } from '@/api/archive'
+import { pageVolumes, addVolume, updateVolume, deleteVolume, listFonds, listTypes, pageFiles } from '@/api/archive'
 import request from '@/api/request'
 
 const userStore = useUserStore()
@@ -123,6 +147,26 @@ const retentionOptions = ref([])
 const securityOptions = ref([])
 
 const query = reactive({ fondsId: null, typeId: null, year: '', title: '', pageNum: 1, pageSize: 10 })
+
+// 案卷详情弹窗（文件从属关系）
+const filesVisible = ref(false)
+const filesLoading = ref(false)
+const currentVolume = ref(null)
+const fileList = ref([])
+
+async function openFiles(row) {
+  currentVolume.value = row
+  filesVisible.value = true
+  filesLoading.value = true
+  try {
+    const data = await pageFiles({ volumeId: row.id, pageNum: 1, pageSize: 100 })
+    fileList.value = data.records
+  } catch (e) {
+    fileList.value = []
+  } finally {
+    filesLoading.value = false
+  }
+}
 
 const defaultForm = { id: null, fondsId: null, typeId: null, year: null, title: '', retentionPeriod: null, securityLevel: null, status: 1 }
 const form = reactive({ ...defaultForm })
