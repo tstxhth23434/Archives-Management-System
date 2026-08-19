@@ -96,7 +96,15 @@ public class ElectronicFileServiceImpl extends ServiceImpl<ElectronicFileMapper,
         record.setIsOriginal(1);
         record.setSort(0);
         record.setUploadTime(java.time.LocalDateTime.now());
-        this.save(record);
+        // 记录库（入库失败时清理已写磁盘文件，避免孤儿文件累积）
+        try {
+            this.save(record);
+        } catch (Exception e) {
+            if (dest.exists() && !dest.delete()) {
+                log.warn("清理上传失败的文件失败: {}", dest.getAbsolutePath());
+            }
+            throw e;
+        }
         log.info("上传电子原文: archiveId={}, fileName={}, size={}", archiveId, originalName, file.getSize());
         return record;
     }

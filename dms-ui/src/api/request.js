@@ -26,6 +26,23 @@ request.interceptors.response.use(
     const res = response.data
     // Blob 响应（文件下载）直接返回，不按 Result 判断
     if (res instanceof Blob) {
+      // 后端业务错误也是 HTTP 200 + JSON（GlobalExceptionHandler 设计），
+      // responseType:'blob' 会把错误 JSON 包成 Blob → 需按 content-type 识别并弹错，避免下载到垃圾文件
+      const ct = String(response.headers['content-type'] || '')
+      if (ct.includes('application/json')) {
+        return res.text().then((text) => {
+          try {
+            const json = JSON.parse(text)
+            if (json && json.code !== undefined && json.code !== 200) {
+              ElMessage.error(json.message || '下载失败')
+              return Promise.reject(new Error(json.message || '下载失败'))
+            }
+          } catch (e) {
+            // 非 JSON 文本按正常文件处理
+          }
+          return res
+        })
+      }
       return res
     }
     // 成功：直接返回 data 业务数据

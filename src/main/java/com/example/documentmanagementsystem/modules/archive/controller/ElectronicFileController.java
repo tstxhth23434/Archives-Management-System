@@ -69,8 +69,10 @@ public class ElectronicFileController extends BaseController {
             throw new com.example.documentmanagementsystem.common.exception.ServiceException("磁盘文件不存在");
         }
         String encodedName = URLEncoder.encode(record.getFileName(), StandardCharsets.UTF_8.name()).replace("+", "%20");
+        // 双写 filename（ASCII 回退）+ filename*（UTF-8），兼容老浏览器/下载工具
+        String asciiName = "download." + (record.getFileSuffix() != null ? record.getFileSuffix() : "bin");
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename*=UTF-8''" + encodedName)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + asciiName + "\"; filename*=UTF-8''" + encodedName)
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .contentLength(file.length())
                 .body(new FileSystemResource(file));

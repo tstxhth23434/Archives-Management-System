@@ -85,8 +85,10 @@ export function deleteFile(id) {
 export function uploadElectronic(archiveId, file) {
   const formData = new FormData()
   formData.append('file', file)
+  // 大文件上传放宽超时（默认 10s 太紧）
   return request.post(`/archive/electronic/upload?archiveId=${archiveId}`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60000
   })
 }
 
