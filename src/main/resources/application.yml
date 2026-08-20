@@ -25,11 +25,11 @@ spring:
     pathmatch:
       matching-strategy: ant_path_matcher
 
-  # 控制台 ANSI 颜色：DETECT 自动检测终端能力
-  # （IDEA/Windows Terminal 等支持 ANSI 的终端显示彩色；旧版 CMD 不支持则自动输出纯文本，避免灰色/乱码）
+  # 控制台 ANSI 颜色：ALWAYS 强制输出（IDEA 控制台/Git Bash 渲染后彩色）
+  # 注：旧版 CMD 不解析 ANSI 会显示转义码乱码，勿在 CMD 里跑本项目
   output:
     ansi:
-      enabled: DETECT
+      enabled: ALWAYS
 
 # 日志配置
 logging:
