@@ -69,7 +69,33 @@ public class ArchiveFileServiceImpl extends ServiceImpl<ArchiveFileMapper, Archi
         if (StringUtils.hasText(query.getTitle())) {
             wrapper.like(ArchiveFile::getTitle, query.getTitle());
         }
-        wrapper.orderByDesc(ArchiveFile::getCreateTime);
+        // D16 检索：档号/关键词模糊，保管期限/密级精确
+        if (StringUtils.hasText(query.getArchiveNo())) {
+            wrapper.like(ArchiveFile::getArchiveNo, query.getArchiveNo());
+        }
+        if (StringUtils.hasText(query.getKeywords())) {
+            wrapper.like(ArchiveFile::getKeywords, query.getKeywords());
+        }
+        if (StringUtils.hasText(query.getRetentionPeriod())) {
+            wrapper.eq(ArchiveFile::getRetentionPeriod, query.getRetentionPeriod());
+        }
+        if (StringUtils.hasText(query.getSecurityLevel())) {
+            wrapper.eq(ArchiveFile::getSecurityLevel, query.getSecurityLevel());
+        }
+        // 排序：支持 orderByColumn/isAsc（白名单防注入），默认按创建时间倒序
+        if (StringUtils.hasText(query.getOrderByColumn())) {
+            String col = query.getOrderByColumn().trim();
+            java.util.Set<String> allowed = new java.util.HashSet<>(java.util.Arrays.asList(
+                    "create_time", "update_time", "year", "title", "archive_no", "author", "pages"));
+            if (allowed.contains(col)) {
+                String dir = "asc".equalsIgnoreCase(query.getIsAsc()) ? "ASC" : "DESC";
+                wrapper.last("ORDER BY " + col + " " + dir);
+            } else {
+                wrapper.orderByDesc(ArchiveFile::getCreateTime);
+            }
+        } else {
+            wrapper.orderByDesc(ArchiveFile::getCreateTime);
+        }
         return this.page(new Page<>(query.getPageNum(), query.getPageSize()), wrapper);
     }
 

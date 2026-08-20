@@ -28,4 +28,16 @@ public class ArchiveFileQuery extends PageQuery {
 
     @ApiModelProperty("题名（模糊）")
     private String title;
+
+    @ApiModelProperty("档号（模糊，D16 检索）")
+    private String archiveNo;
+
+    @ApiModelProperty("关键词（模糊，D16 检索）")
+    private String keywords;
+
+    @ApiModelProperty("保管期限（字典值，D16 检索）")
+    private String retentionPeriod;
+
+    @ApiModelProperty("密级（字典值，D16 检索）")
+    private String securityLevel;
 }

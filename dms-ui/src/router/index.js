@@ -31,6 +31,7 @@ const routes = [
       { path: 'system/dict', name: 'DictManage', component: () => import('@/views/system/dict/index.vue'), meta: { title: '字典管理' } },
       { path: 'system/log', name: 'LogManage', component: () => import('@/views/system/log/index.vue'), meta: { title: '操作日志' } },
       { path: 'archive/overview', name: 'ArchiveOverview', component: () => import('@/views/archive/overview/index.vue'), meta: { title: '档案浏览' } },
+      { path: 'archive/search', name: 'ArchiveSearch', component: () => import('@/views/archive/search/index.vue'), meta: { title: '档案检索' } },
       { path: 'archive/fonds', name: 'FondsManage', component: () => import('@/views/archive/fonds/index.vue'), meta: { title: '全宗管理' } },
       { path: 'archive/type', name: 'TypeManage', component: () => import('@/views/archive/type/index.vue'), meta: { title: '门类管理' } },
       { path: 'archive/volume', name: 'VolumeManage', component: () => import('@/views/archive/volume/index.vue'), meta: { title: '案卷管理' } },
