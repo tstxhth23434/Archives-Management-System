@@ -37,7 +37,10 @@
         </el-form-item>
       </el-form>
 
-      <div class="login-tip">默认账号 admin / admin123</div>
+      <div class="login-tip">
+        示例账号：admin / admin123（超级管理员）
+        <br />zhangsan / admin123（档案管理员）｜lisi / admin123（普通用户）
+      </div>
     </div>
   </div>
 </template>
