@@ -13,9 +13,12 @@ import com.example.documentmanagementsystem.modules.archive.dto.ImportResultVO;
 import com.example.documentmanagementsystem.modules.archive.entity.ArchiveFonds;
 import com.example.documentmanagementsystem.modules.archive.entity.ArchiveFile;
 import com.example.documentmanagementsystem.modules.archive.entity.ArchiveType;
+import cn.dev33.satoken.stp.StpUtil;
+import com.example.documentmanagementsystem.modules.archive.entity.Lifecycle;
 import com.example.documentmanagementsystem.modules.archive.mapper.ArchiveFileMapper;
 import com.example.documentmanagementsystem.modules.archive.mapper.ArchiveFondsMapper;
 import com.example.documentmanagementsystem.modules.archive.mapper.ArchiveTypeMapper;
+import com.example.documentmanagementsystem.modules.archive.mapper.LifecycleMapper;
 import com.example.documentmanagementsystem.modules.archive.service.IArchiveFileService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -40,10 +43,12 @@ public class ArchiveFileServiceImpl extends ServiceImpl<ArchiveFileMapper, Archi
 
     private final ArchiveFondsMapper fondsMapper;
     private final ArchiveTypeMapper typeMapper;
+    private final LifecycleMapper lifecycleMapper;
 
-    public ArchiveFileServiceImpl(ArchiveFondsMapper fondsMapper, ArchiveTypeMapper typeMapper) {
+    public ArchiveFileServiceImpl(ArchiveFondsMapper fondsMapper, ArchiveTypeMapper typeMapper, LifecycleMapper lifecycleMapper) {
         this.fondsMapper = fondsMapper;
         this.typeMapper = typeMapper;
+        this.lifecycleMapper = lifecycleMapper;
     }
 
     @Override
@@ -110,6 +115,10 @@ public class ArchiveFileServiceImpl extends ServiceImpl<ArchiveFileMapper, Archi
                 || !Objects.equals(exist.getYear(), dto.getYear())) {
             throw new ServiceException("全宗/门类/年度不可修改（档号已生成）");
         }
+        // 已封库档案只读
+        if (exist.getStatus() != null && exist.getStatus() == 3) {
+            throw new ServiceException("档案已封库，禁止编辑");
+        }
         ArchiveFile file = new ArchiveFile();
         BeanUtils.copyProperties(dto, file);
         // 保留原档号
@@ -125,13 +134,73 @@ public class ArchiveFileServiceImpl extends ServiceImpl<ArchiveFileMapper, Archi
         if (exist == null) {
             throw new ServiceException("文件不存在");
         }
+        if (exist.getStatus() != null && exist.getStatus() == 3) {
+            throw new ServiceException("档案已封库，禁止删除");
+        }
         this.removeById(id);
         log.info("删除文件: id={}, archiveNo={}", id, exist.getArchiveNo());
     }
 
     @Override
-    public ImportResultVO importExcel(MultipartFile file) throws IOException {
-        String originalName = file.getOriginalFilename();
+    @Transactional(rollbackFor = Exception.class)
+    public void changeStatus(Long id, Integer status) {
+        if (status == null || status < 1 || status > 3) {
+            throw new ServiceException("无效的状态值：" + status);
+        }
+        ArchiveFile exist = this.getById(id);
+        if (exist == null) {
+            throw new ServiceException("文件不存在");
+        }
+        int from = exist.getStatus() == null ? 1 : exist.getStatus();
+        // 状态流转顺序：整理中(1) → 已归档(2) → 已封库(3)，不可跳级、不可回退
+        if (status != from + 1) {
+            throw new ServiceException("状态只能按 整理中→已归档→已封库 顺序流转（当前：" + from + "，目标：" + status + "）");
+        }
+        ArchiveFile update = new ArchiveFile();
+        update.setId(id);
+        update.setStatus(status);
+        this.updateById(update);
+        // 写生命周期履历
+        writeLifecycle(exist, from, status);
+        log.info("档案状态流转: id={}, {}→{}", id, from, status);
+    }
+
+    @Override
+    public List<Lifecycle> listLifecycle(Long id) {
+        return lifecycleMapper.selectList(new LambdaQueryWrapper<Lifecycle>()
+                .eq(Lifecycle::getArchiveId, id)
+                .orderByAsc(Lifecycle::getCreateTime));
+    }
+
+    /**
+     * 写入生命周期履历（动作编码与名称随流转生成）
+     */
+    private void writeLifecycle(ArchiveFile file, int from, int to) {
+        String action = to == 2 ? "ARCHIVE" : "SEAL";
+        String actionName = to == 2 ? "归档" : "封库";
+        Lifecycle lc = new Lifecycle();
+        lc.setArchiveId(file.getId());
+        lc.setAction(action);
+        lc.setActionName(actionName);
+        lc.setDetail("状态由「" + statusName(from) + "」变更为「" + statusName(to) + "」");
+        // 操作人（Sa-Token 会话；未取到为 null）
+        try {
+            lc.setOperatorId(StpUtil.getLoginIdAsLong());
+            Object uname = StpUtil.getSession().get("username");
+            lc.setOperatorName(uname == null ? null : String.valueOf(uname));
+        } catch (Exception ignored) {
+            // 无登录上下文时操作人为空
+        }
+        lc.setCreateTime(java.time.LocalDateTime.now());
+        lifecycleMapper.insert(lc);
+    }
+
+    private String statusName(int status) {
+        return status == 1 ? "整理中" : (status == 2 ? "已归档" : "已封库");
+    }
+
+    @Override
+    public ImportResultVO importExcel(MultipartFile file) throws IOException {        String originalName = file.getOriginalFilename();
         if (originalName == null || !(originalName.endsWith(".xlsx") || originalName.endsWith(".xls"))) {
             throw new ServiceException("请上传 .xlsx 或 .xls 格式的 Excel 文件");
         }

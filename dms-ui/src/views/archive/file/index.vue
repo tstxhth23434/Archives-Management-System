@@ -39,16 +39,27 @@
         <el-table-column label="保管期限" min-width="100">
           <template #default="{ row }">{{ retentionMap[row.retentionPeriod] || '-' }}</template>
         </el-table-column>
-        <el-table-column label="状态" width="90">
+        <el-table-column label="状态" width="150">
           <template #default="{ row }">
             <el-tag :type="statusTagType(row.status)" size="small">{{ statusMap[row.status] || '-' }}</el-tag>
+            <el-button
+              v-if="row.status === 1 && userStore.hasPerm('archive:file:edit')"
+              link type="success" size="small"
+              @click="handleFlow(row, 2)"
+            >归档</el-button>
+            <el-button
+              v-if="row.status === 2 && userStore.hasPerm('archive:file:edit')"
+              link type="warning" size="small"
+              @click="handleFlow(row, 3)"
+            >封库</el-button>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="230" fixed="right">
           <template #default="{ row }">
             <el-button v-if="userStore.hasPerm('archive:file:query')" link type="success" @click="openElectronics(row)">原文</el-button>
-            <el-button v-if="userStore.hasPerm('archive:file:edit')" link type="primary" @click="openEdit(row)">编辑</el-button>
-            <el-button v-if="userStore.hasPerm('archive:file:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button v-if="userStore.hasPerm('archive:file:query')" link type="info" @click="openLifecycle(row)">履历</el-button>
+            <el-button v-if="row.status !== 3 && userStore.hasPerm('archive:file:edit')" link type="primary" @click="openEdit(row)">编辑</el-button>
+            <el-button v-if="row.status !== 3 && userStore.hasPerm('archive:file:delete')" link type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -66,6 +77,23 @@
         />
       </div>
     </el-card>
+
+    <!-- 生命周期履历弹窗（D15 时间轴） -->
+    <el-dialog v-model="lifecycleVisible" :title="`生命周期履历：${lifecycleFileTitle}`" width="560px" destroy-on-close>
+      <el-timeline v-if="lifecycleList.length">
+        <el-timeline-item
+          v-for="item in lifecycleList"
+          :key="item.id"
+          :timestamp="item.createTime"
+          :type="item.action === 'SEAL' ? 'danger' : 'success'"
+        >
+          <b>{{ item.actionName }}</b>
+          <div style="color: #909399; font-size: 12px">{{ item.detail }}</div>
+          <div style="color: #909399; font-size: 12px">操作人：{{ item.operatorName || '-' }}</div>
+        </el-timeline-item>
+      </el-timeline>
+      <el-empty v-else description="暂无履历记录" />
+    </el-dialog>
 
     <!-- Excel 批量导入弹窗（D13） -->
     <el-dialog v-model="importVisible" title="批量导入档案" width="560px" destroy-on-close>
@@ -205,7 +233,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Upload } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
-import { pageFiles, addFile, updateFile, deleteFile, listFonds, listTypes, pageVolumes, uploadElectronic, listElectronics, downloadElectronic, deleteElectronic, previewElectronic, importExcelFile } from '@/api/archive'
+import { pageFiles, addFile, updateFile, deleteFile, listFonds, listTypes, pageVolumes, uploadElectronic, listElectronics, downloadElectronic, deleteElectronic, previewElectronic, importExcelFile, changeFileStatus, getFileLifecycle } from '@/api/archive'
 import request from '@/api/request'
 
 const userStore = useUserStore()
@@ -435,6 +463,29 @@ async function handlePreview(row) {
     previewVisible.value = true
   } catch (e) {
     // 错误提示已由拦截器统一弹出
+  }
+}
+
+// 状态流转 + 生命周期履历（D15）
+const lifecycleVisible = ref(false)
+const lifecycleFileTitle = ref('')
+const lifecycleList = ref([])
+
+async function handleFlow(row, toStatus) {
+  const actionName = toStatus === 2 ? '归档' : '封库'
+  await ElMessageBox.confirm(`确认将文件「${row.title}」${actionName}？${toStatus === 3 ? '（封库后档案只读，不可再编辑/删除）' : ''}`, '提示', { type: 'warning' })
+  await changeFileStatus(row.id, toStatus)
+  ElMessage.success(`${actionName}成功`)
+  fetchData()
+}
+
+async function openLifecycle(row) {
+  lifecycleFileTitle.value = row.title
+  lifecycleVisible.value = true
+  try {
+    lifecycleList.value = await getFileLifecycle(row.id)
+  } catch (e) {
+    lifecycleList.value = []
   }
 }
 

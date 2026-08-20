@@ -91,6 +91,16 @@ export function importExcelFile(file) {
   })
 }
 
+// 状态流转（D15：整理中→已归档→已封库）
+export function changeFileStatus(id, status) {
+  return request.put(`/archive/file/${id}/status/${status}`)
+}
+
+// 生命周期履历（D15 时间轴）
+export function getFileLifecycle(id) {
+  return request.get(`/archive/file/${id}/lifecycle`)
+}
+
 // ===== 电子原文（D12） =====
 export function uploadElectronic(archiveId, file) {
   const formData = new FormData()

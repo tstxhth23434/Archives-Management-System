@@ -26,6 +26,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * 档案文件著录接口（D10；D13 Excel 批量导入）
@@ -51,6 +52,22 @@ public class FileController extends BaseController {
     @PostMapping("/import")
     public Result<ImportResultVO> importExcel(@RequestParam("file") MultipartFile file) throws IOException {
         return success(fileService.importExcel(file));
+    }
+
+    @ApiOperation("状态流转（整理中→已归档→已封库）")
+    @SaCheckPermission("archive:file:edit")
+    @OpLog("档案状态流转")
+    @PutMapping("/{id}/status/{status}")
+    public Result<Void> changeStatus(@PathVariable Long id, @PathVariable Integer status) {
+        fileService.changeStatus(id, status);
+        return success("状态流转成功", null);
+    }
+
+    @ApiOperation("查询生命周期履历（时间轴）")
+    @SaCheckPermission("archive:file:query")
+    @GetMapping("/{id}/lifecycle")
+    public Result<List<com.example.documentmanagementsystem.modules.archive.entity.Lifecycle>> lifecycle(@PathVariable Long id) {
+        return success(fileService.listLifecycle(id));
     }
 
     @ApiOperation("新增文件（自动生成档号）")
