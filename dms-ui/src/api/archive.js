@@ -81,6 +81,16 @@ export function deleteFile(id) {
   return request.delete(`/archive/file/${id}`)
 }
 
+// Excel 批量导入（D13）
+export function importExcelFile(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request.post('/archive/file/import', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+    timeout: 60000
+  })
+}
+
 // ===== 电子原文（D12） =====
 export function uploadElectronic(archiveId, file) {
   const formData = new FormData()
@@ -110,5 +120,10 @@ export async function downloadElectronic(id, fileName) {
 
 export function deleteElectronic(id) {
   return request.delete(`/archive/electronic/${id}`)
+}
+
+// 在线预览（D13）：返回 Blob，前端按类型展示
+export async function previewElectronic(id) {
+  return request.get(`/archive/electronic/preview/${id}`, { responseType: 'blob' })
 }
 

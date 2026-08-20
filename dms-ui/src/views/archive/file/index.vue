@@ -17,6 +17,9 @@
         <el-button type="primary" @click="handleSearch">搜索</el-button>
         <el-button @click="handleReset">重置</el-button>
         <div style="flex: 1"></div>
+        <el-button v-if="userStore.hasPerm('archive:file:add')" type="success" @click="openImport">
+          <el-icon><Upload /></el-icon> 批量导入
+        </el-button>
         <el-button v-if="userStore.hasPerm('archive:file:add')" type="primary" @click="openAdd">
           <el-icon><Plus /></el-icon> 新增文件
         </el-button>
@@ -64,6 +67,43 @@
       </div>
     </el-card>
 
+    <!-- Excel 批量导入弹窗（D13） -->
+    <el-dialog v-model="importVisible" title="批量导入档案" width="560px" destroy-on-close>
+      <el-alert type="info" :closable="false" style="margin-bottom: 12px"
+        title="模板列：全宗代码、门类代码、题名、责任者、文件日期、年度、保管期限、密级、关键词、页数、摘要（题名/年度/全宗/门类必填，档号自动生成）" />
+      <el-upload
+        :show-file-list="false"
+        :http-request="handleImport"
+        accept=".xlsx,.xls"
+        :disabled="importing"
+      >
+        <el-button type="primary" :loading="importing">选择 Excel 并导入</el-button>
+      </el-upload>
+      <div v-if="importResult" style="margin-top: 16px">
+        <el-descriptions :column="3" border size="small">
+          <el-descriptions-item label="总行数">{{ importResult.total }}</el-descriptions-item>
+          <el-descriptions-item label="成功">
+            <span style="color: #67c23a">{{ importResult.success }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="失败">
+            <span style="color: #f56c6c">{{ importResult.fail }}</span>
+          </el-descriptions-item>
+        </el-descriptions>
+        <el-table v-if="importResult.errors && importResult.errors.length" :data="importResult.errors" size="small" style="margin-top: 12px" max-height="240">
+          <el-table-column prop="row" label="行号" width="70" />
+          <el-table-column prop="message" label="错误原因" />
+        </el-table>
+      </div>
+    </el-dialog>
+
+    <!-- 电子原文预览弹窗（D13） -->
+    <el-dialog v-model="previewVisible" :title="`预览：${previewName}`" width="720px" destroy-on-close>
+      <div style="display: flex; justify-content: center; max-height: 70vh; overflow: auto">
+        <img v-if="previewIsImage" :src="previewUrl" style="max-width: 100%" alt="预览" />
+        <iframe v-else :src="previewUrl" style="width: 100%; height: 65vh; border: none" />
+      </div>
+    </el-dialog>
+
     <!-- 电子原文管理弹窗（D12） -->
     <el-dialog v-model="elecVisible" :title="`电子原文：${currentFile?.title}`" width="700px" destroy-on-close>
       <div class="search-bar" style="margin-bottom: 12px">
@@ -85,8 +125,9 @@
         </el-table-column>
         <el-table-column prop="fileSuffix" label="类型" width="70" />
         <el-table-column prop="uploadTime" label="上传时间" min-width="160" />
-        <el-table-column label="操作" width="130">
+        <el-table-column label="操作" width="180">
           <template #default="{ row }">
+            <el-button link type="primary" size="small" @click="handlePreview(row)">预览</el-button>
             <el-button link type="primary" size="small" @click="handleDownload(row)">下载</el-button>
             <el-button v-if="userStore.hasPerm('archive:file:delete')" link type="danger" size="small" @click="handleElecDelete(row)">删除</el-button>
           </template>
@@ -164,7 +205,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Upload } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/user'
-import { pageFiles, addFile, updateFile, deleteFile, listFonds, listTypes, pageVolumes, uploadElectronic, listElectronics, downloadElectronic, deleteElectronic } from '@/api/archive'
+import { pageFiles, addFile, updateFile, deleteFile, listFonds, listTypes, pageVolumes, uploadElectronic, listElectronics, downloadElectronic, deleteElectronic, previewElectronic, importExcelFile } from '@/api/archive'
 import request from '@/api/request'
 
 const userStore = useUserStore()
@@ -351,6 +392,50 @@ async function handleElecDelete(row) {
   await deleteElectronic(row.id)
   ElMessage.success('删除成功')
   elecList.value = await listElectronics(currentFile.value.id)
+}
+
+// Excel 批量导入（D13）
+const importVisible = ref(false)
+const importing = ref(false)
+const importResult = ref(null)
+
+function openImport() {
+  importResult.value = null
+  importVisible.value = true
+}
+
+async function handleImport(options) {
+  importing.value = true
+  try {
+    importResult.value = await importExcelFile(options.file)
+    ElMessage.success(`导入完成：成功 ${importResult.value.success} 条，失败 ${importResult.value.fail} 条`)
+    fetchData()
+  } catch (e) {
+    // 错误提示已由拦截器统一弹出
+  } finally {
+    importing.value = false
+  }
+}
+
+// 原文预览（D13）
+const previewVisible = ref(false)
+const previewName = ref('')
+const previewUrl = ref('')
+const previewIsImage = ref(false)
+const IMAGE_SUFFIX = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']
+
+async function handlePreview(row) {
+  try {
+    const blob = await previewElectronic(row.id)
+    const url = URL.createObjectURL(blob)
+    previewName.value = row.fileName
+    const suffix = (row.fileSuffix || '').toLowerCase()
+    previewIsImage.value = IMAGE_SUFFIX.includes(suffix)
+    previewUrl.value = url
+    previewVisible.value = true
+  } catch (e) {
+    // 错误提示已由拦截器统一弹出
+  }
 }
 
 async function fetchData() {

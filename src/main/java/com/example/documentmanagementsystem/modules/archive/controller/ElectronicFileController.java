@@ -12,6 +12,7 @@ import io.swagger.annotations.ApiParam;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.MediaTypeFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -54,6 +55,25 @@ public class ElectronicFileController extends BaseController {
     @GetMapping("/list")
     public Result<List<ElectronicFile>> list(@ApiParam("档案ID") @RequestParam Long archiveId) {
         return success(electronicFileService.listByArchive(archiveId));
+    }
+
+    @ApiOperation("在线预览电子原文（图片/pdf 浏览器内展示）")
+    @SaCheckPermission("archive:file:query")
+    @GetMapping("/preview/{id}")
+    public ResponseEntity<FileSystemResource> preview(@PathVariable Long id) {
+        ElectronicFile record = electronicFileService.getById(id);
+        if (record == null) {
+            throw new com.example.documentmanagementsystem.common.exception.ServiceException("电子原文不存在");
+        }
+        File file = electronicFileService.getDiskFile(record);
+        if (!file.exists()) {
+            throw new com.example.documentmanagementsystem.common.exception.ServiceException("磁盘文件不存在");
+        }
+        MediaType mediaType = MediaTypeFactory.getMediaType(file.getName()).orElse(MediaType.APPLICATION_OCTET_STREAM);
+        return ResponseEntity.ok()
+                .contentType(mediaType)
+                .contentLength(file.length())
+                .body(new FileSystemResource(file));
     }
 
     @ApiOperation("下载电子原文")

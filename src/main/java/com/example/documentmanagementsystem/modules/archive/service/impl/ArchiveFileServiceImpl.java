@@ -1,5 +1,7 @@
 package com.example.documentmanagementsystem.modules.archive.service.impl;
 
+import cn.hutool.poi.excel.ExcelReader;
+import cn.hutool.poi.excel.ExcelUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -7,6 +9,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.example.documentmanagementsystem.common.exception.ServiceException;
 import com.example.documentmanagementsystem.modules.archive.dto.ArchiveFileDTO;
 import com.example.documentmanagementsystem.modules.archive.dto.ArchiveFileQuery;
+import com.example.documentmanagementsystem.modules.archive.dto.ImportResultVO;
 import com.example.documentmanagementsystem.modules.archive.entity.ArchiveFonds;
 import com.example.documentmanagementsystem.modules.archive.entity.ArchiveFile;
 import com.example.documentmanagementsystem.modules.archive.entity.ArchiveType;
@@ -19,7 +22,13 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -118,6 +127,128 @@ public class ArchiveFileServiceImpl extends ServiceImpl<ArchiveFileMapper, Archi
         }
         this.removeById(id);
         log.info("删除文件: id={}, archiveNo={}", id, exist.getArchiveNo());
+    }
+
+    @Override
+    public ImportResultVO importExcel(MultipartFile file) throws IOException {
+        String originalName = file.getOriginalFilename();
+        if (originalName == null || !(originalName.endsWith(".xlsx") || originalName.endsWith(".xls"))) {
+            throw new ServiceException("请上传 .xlsx 或 .xls 格式的 Excel 文件");
+        }
+        ExcelReader reader = ExcelUtil.getReader(file.getInputStream());
+        List<Map<String, Object>> rows;
+        try {
+            rows = reader.readAll(); // 第一行作为表头
+        } finally {
+            reader.close();
+        }
+        ImportResultVO result = new ImportResultVO();
+        result.setTotal(rows.size());
+        for (int i = 0; i < rows.size(); i++) {
+            int rowNum = i + 2; // 表头第 1 行，数据从第 2 行
+            Map<String, Object> row = rows.get(i);
+            try {
+                importOneRow(row);
+                result.setSuccess(result.getSuccess() + 1);
+            } catch (Exception e) {
+                result.setFail(result.getFail() + 1);
+                result.getErrors().add(new ImportResultVO.ErrorItem(rowNum, e.getMessage()));
+            }
+        }
+        log.info("Excel 批量导入: total={}, success={}, fail={}", result.getTotal(), result.getSuccess(), result.getFail());
+        return result;
+    }
+
+    /**
+     * 导入单行（全宗代码/门类代码/题名/责任者/文件日期/年度/保管期限/密级/关键词/页数/摘要）
+     * 任意校验失败抛异常，由外层收集为错误行
+     */
+    private void importOneRow(Map<String, Object> row) {
+        String fondsCode = cellStr(row, "全宗代码");
+        String typeCode = cellStr(row, "门类代码");
+        String title = cellStr(row, "题名");
+        String yearStr = cellStr(row, "年度");
+        if (!StringUtils.hasText(fondsCode) || !StringUtils.hasText(typeCode)) {
+            throw new ServiceException("全宗代码/门类代码不能为空");
+        }
+        // 全宗存在
+        ArchiveFonds fonds = fondsMapper.selectOne(new LambdaQueryWrapper<ArchiveFonds>()
+                .eq(ArchiveFonds::getFondsCode, fondsCode));
+        if (fonds == null) {
+            throw new ServiceException("全宗代码不存在：" + fondsCode);
+        }
+        // 门类存在且属于该全宗
+        ArchiveType type = typeMapper.selectOne(new LambdaQueryWrapper<ArchiveType>()
+                .eq(ArchiveType::getFondsId, fonds.getId())
+                .eq(ArchiveType::getTypeCode, typeCode));
+        if (type == null) {
+            throw new ServiceException("门类代码不存在或不属于该全宗：" + typeCode);
+        }
+        if (!StringUtils.hasText(title)) {
+            throw new ServiceException("题名不能为空");
+        }
+        // 年度必填且为数字
+        Integer year = parseYear(yearStr);
+        if (year == null) {
+            throw new ServiceException("年度不能为空或格式错误：" + yearStr);
+        }
+        ArchiveFile file = new ArchiveFile();
+        file.setFondsId(fonds.getId());
+        file.setTypeId(type.getId());
+        file.setTitle(title.trim());
+        file.setAuthor(cellStr(row, "责任者"));
+        file.setDocDate(parseDate(cellStr(row, "文件日期")));
+        file.setYear(year);
+        file.setRetentionPeriod(nullToEmpty(cellStr(row, "保管期限")));
+        file.setSecurityLevel(nullToEmpty(cellStr(row, "密级")));
+        file.setKeywords(cellStr(row, "关键词"));
+        file.setPages(parseIntSafe(cellStr(row, "页数"), 0));
+        file.setSummary(cellStr(row, "摘要"));
+        file.setStatus(1);
+        // 档号自动生成（序号统计含已删除记录，档号不复用）
+        file.setArchiveNo(generateArchiveNo(fonds.getFondsCode(), type.getTypeCode(), fonds.getId(), type.getId(), year));
+        this.save(file);
+    }
+
+    private String cellStr(Map<String, Object> row, String key) {
+        Object v = row.get(key);
+        return v == null ? null : String.valueOf(v).trim();
+    }
+
+    private String nullToEmpty(String s) {
+        return StringUtils.hasText(s) ? s : null;
+    }
+
+    private Integer parseYear(String s) {
+        if (!StringUtils.hasText(s)) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(s.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    private Integer parseIntSafe(String s, int defaultValue) {
+        Integer v = parseYear(s);
+        return v == null ? defaultValue : v;
+    }
+
+    private LocalDate parseDate(String s) {
+        if (!StringUtils.hasText(s)) {
+            return null;
+        }
+        // 支持 2023-01-15 / 2023/01/15 / 20230115
+        String v = s.trim().replace("/", "-");
+        try {
+            if (v.length() == 8) {
+                return LocalDate.parse(v, DateTimeFormatter.ofPattern("yyyyMMdd"));
+            }
+            return LocalDate.parse(v, DateTimeFormatter.ISO_LOCAL_DATE);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     /**

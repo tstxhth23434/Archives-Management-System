@@ -29,7 +29,7 @@ spring:
   # （IDEA/Windows Terminal 等支持 ANSI 的终端显示彩色；旧版 CMD 不支持则自动输出纯文本，避免灰色/乱码）
   output:
     ansi:
-      enabled: ALWAYS
+      enabled: DETECT
 
 # 日志配置
 logging:

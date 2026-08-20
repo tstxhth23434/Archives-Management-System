@@ -4,10 +4,14 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.example.documentmanagementsystem.modules.archive.dto.ArchiveFileDTO;
 import com.example.documentmanagementsystem.modules.archive.dto.ArchiveFileQuery;
+import com.example.documentmanagementsystem.modules.archive.dto.ImportResultVO;
 import com.example.documentmanagementsystem.modules.archive.entity.ArchiveFile;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 /**
- * 档案文件服务接口（D10 著录）
+ * 档案文件服务接口（D10 著录，D13 Excel 批量导入）
  */
 public interface IArchiveFileService extends IService<ArchiveFile> {
 
@@ -30,4 +34,9 @@ public interface IArchiveFileService extends IService<ArchiveFile> {
      * 删除文件（逻辑删除）
      */
     void deleteFile(Long id);
+
+    /**
+     * Excel 批量导入（逐行校验，错误行反馈，档号自动生成）
+     */
+    ImportResultVO importExcel(MultipartFile file) throws IOException;
 }
