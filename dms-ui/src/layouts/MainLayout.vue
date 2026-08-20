@@ -2,7 +2,7 @@
   <el-container class="layout">
     <!-- 左侧菜单 -->
     <el-aside width="210px" class="sidebar">
-      <div class="logo">
+      <div class="logo" @click="$router.push('/')" title="回到首页">
         <span class="logo-icon">档</span>
         <span class="logo-text">档案管理系统</span>
       </div>
