@@ -1,7 +1,20 @@
 <template>
   <div class="search-page">
     <el-card shadow="never">
-      <!-- 检索条件 -->
+      <!-- 借阅申请弹窗（D17） -->
+    <el-dialog v-model="borrowVisible" :title="`申请借阅：${borrowFile?.title}`" width="480px" destroy-on-close>
+      <el-form ref="borrowFormRef" :model="borrowForm" :rules="borrowRules" label-width="90px">
+        <el-form-item label="借阅理由" prop="reason">
+          <el-input v-model="borrowForm.reason" type="textarea" :rows="3" placeholder="请填写借阅用途（必填）" />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="borrowVisible = false">取消</el-button>
+        <el-button type="primary" :loading="borrowing" @click="handleBorrowSubmit">提交申请</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- 检索条件 -->
       <el-form :inline="true" :model="query" class="search-form">
         <el-form-item label="题名">
           <el-input v-model="query.title" placeholder="题名模糊" clearable style="width: 150px" @keyup.enter="handleSearch" />
@@ -53,6 +66,15 @@
             <el-tag :type="statusTagType(row.status)" size="small">{{ statusMap[row.status] || '-' }}</el-tag>
           </template>
         </el-table-column>
+        <el-table-column label="操作" width="100" fixed="right">
+          <template #default="{ row }">
+            <el-button
+              v-if="row.status >= 2 && userStore.hasPerm('archive:borrow:apply')"
+              link type="warning" size="small"
+              @click="openBorrow(row)"
+            >申请借阅</el-button>
+          </template>
+        </el-table-column>
       </el-table>
 
       <!-- 分页 -->
@@ -73,8 +95,12 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { listTypes } from '@/api/archive'
+import { ElMessage } from 'element-plus'
+import { listTypes, applyBorrow } from '@/api/archive'
 import request from '@/api/request'
+import { useUserStore } from '@/stores/user'
+
+const userStore = useUserStore()
 
 const loading = ref(false)
 const tableData = ref([])
@@ -115,6 +141,38 @@ async function fetchDicts() {
   } catch (e) {
     // 字典拉取失败不影响检索
   }
+}
+
+// 借阅申请（D17）
+const borrowVisible = ref(false)
+const borrowing = ref(false)
+const borrowFile = ref(null)
+const borrowFormRef = ref(null)
+const borrowForm = reactive({ reason: '' })
+const borrowRules = {
+  reason: [{ required: true, message: '请填写借阅理由', trigger: 'blur' }]
+}
+
+function openBorrow(row) {
+  borrowFile.value = row
+  borrowForm.reason = ''
+  borrowVisible.value = true
+}
+
+async function handleBorrowSubmit() {
+  await borrowFormRef.value.validate(async (valid) => {
+    if (!valid) return
+    borrowing.value = true
+    try {
+      await applyBorrow({ archiveId: borrowFile.value.id, reason: borrowForm.reason })
+      ElMessage.success('申请成功，等待审批')
+      borrowVisible.value = false
+    } catch (e) {
+      // 错误提示已由拦截器统一弹出
+    } finally {
+      borrowing.value = false
+    }
+  })
 }
 
 async function fetchData() {

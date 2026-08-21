@@ -101,6 +101,15 @@ export function getFileLifecycle(id) {
   return request.get(`/archive/file/${id}/lifecycle`)
 }
 
+// 借阅（D17）
+export function applyBorrow(data) {
+  return request.post('/archive/borrow', data)
+}
+
+export function getMyBorrows() {
+  return request.get('/archive/borrow/mine')
+}
+
 // ===== 电子原文（D12） =====
 export function uploadElectronic(archiveId, file) {
   const formData = new FormData()

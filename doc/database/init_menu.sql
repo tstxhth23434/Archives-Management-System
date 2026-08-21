@@ -64,6 +64,10 @@ INSERT INTO `sys_menu` (`id`, `parent_id`, `menu_name`, `menu_title`, `menu_type
 -- 档案检索（D16，所有角色可见）
 (49, 0, '档案检索', '档案检索', 2, 'Search', '/archive/search', 'archive/search/index', NULL, 1, 1),
 (50, 49, '检索查询', '检索查询', 3, NULL, NULL, NULL, 'archive:search:query', 1, 1),
+-- 借阅（D17 申请 / D18 审批）
+(51, 0, '我的借阅', '我的借阅', 2, 'Reading', '/archive/borrow', 'archive/borrow/index', NULL, 2, 1),
+(52, 51, '借阅申请', '申请借阅', 3, NULL, NULL, NULL, 'archive:borrow:apply', 1, 1),
+(53, 51, '借阅审批', '借阅审批', 3, NULL, NULL, NULL, 'archive:borrow:approve', 2, 1),
 -- 案卷/文件按钮权限（D10 档号生成 + 著录）
 (41, 9,  '案卷新增', '新增案卷', 3, NULL, NULL, NULL, 'archive:volume:add', 1, 1),
 (42, 9,  '案卷编辑', '编辑案卷', 3, NULL, NULL, NULL, 'archive:volume:edit', 2, 1),
@@ -85,7 +89,7 @@ INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
 SELECT 2, `id` FROM `sys_menu` WHERE `id` IN (2, 7, 8, 9, 10, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47)
 ON DUPLICATE KEY UPDATE `role_id` = `role_id`;
 
--- 普通用户（role_id=3）：首页 + 档案检索（借阅菜单 D17 就绪后补充）
+-- 普通用户（role_id=3）：首页 + 档案检索 + 我的借阅/借阅申请（审批 D18 仅管理员）
 INSERT INTO `sys_role_menu` (`role_id`, `menu_id`)
-SELECT 3, `id` FROM `sys_menu` WHERE `id` IN (48, 49, 50)
+SELECT 3, `id` FROM `sys_menu` WHERE `id` IN (48, 49, 50, 51, 52)
 ON DUPLICATE KEY UPDATE `role_id` = `role_id`;
